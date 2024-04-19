@@ -18,8 +18,8 @@ type ChannelUpdateEventSubEvent struct {
 	ContentClassificationLabels []string `json:"content_classification_labels,omitempty"`
 }
 
-// Renamed from ChannelUpdateEventSubResponse to ChannelUpdateEvent to make more sense in my context
-type ChannelUpdateEvent struct {
+// Renamed from ChannelUpdateEventSubResponse to ChannelUpdateEventMessage to make more sense in my context
+type ChannelUpdateEventMessage struct {
 	Subscription EventsubSubscription       `json:"subscription"`
 	Event        ChannelUpdateEventSubEvent `json:"event"`
 }

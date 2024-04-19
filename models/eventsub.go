@@ -32,7 +32,8 @@ type EventsubCondition struct {
 	CampaignID            string `json:"campaign_id,omitempty"`
 }
 
-type EventsubResponse struct {
+// Renamed from EventsubResponse to EventsubMessage to make more sense in this context
+type EventsubMessage struct {
 	Subscription EventsubSubscription `json:"subscription"`
 	Event        interface{}          `json:"event,omitempty"`
 }

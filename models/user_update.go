@@ -2,10 +2,10 @@
 // https://github.com/twitchdev/twitch-cli/blob/83b47aa44a986d3ff47d3800d3fee7983813a7a4/internal/models/eventsub.go
 package models
 
-// Renamed from UserUpdateEventSubResponse to UserUpdateEvent to make more sense in my context
-type UserUpdateEvent struct {
-	Subscription EventsubSubscription  `json:"subscription"`
-	Event        StreamUpEventSubEvent `json:"event"`
+// Renamed from UserUpdateEventSubResponse to UserUpdateEventMessage to make more sense in my context
+type UserUpdateEventMessage struct {
+	Subscription EventsubSubscription    `json:"subscription"`
+	Event        UserUpdateEventSubEvent `json:"event"`
 }
 
 type UserUpdateEventSubEvent struct {

@@ -2,10 +2,10 @@
 // https://github.com/twitchdev/twitch-cli/blob/83b47aa44a986d3ff47d3800d3fee7983813a7a4/internal/models/streamdown.go
 package models
 
-// Renamed from StreamDownEventSubResponse to StreamDownEvent to make more sense in my context
-type StreamDownEvent struct {
-	Subscription EventsubSubscription  `json:"subscription"`
-	Event        StreamUpEventSubEvent `json:"event"`
+// Renamed from StreamDownEventSubResponse to StreamDownEventMessage to make more sense in my context
+type StreamDownEventMessage struct {
+	Subscription EventsubSubscription    `json:"subscription"`
+	Event        StreamDownEventSubEvent `json:"event"`
 }
 
 type StreamDownEventSubEvent struct {
