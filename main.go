@@ -17,14 +17,10 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
-	secret := os.Getenv("SECRET")
 	port := os.Getenv("PORT")
-
-	if secret == "" || port == "" {
-		log.Fatal("You must specify SECRET and PORT environment variables")
+	if port == "" {
+		port = "8080"
 	}
-
-	fmt.Println("Starting up!")
 
 	http.HandleFunc("POST /webhook", routes.HandleWebhook)
 	http.HandleFunc("GET /healthcheck", routes.HandleHealthCheck)
@@ -35,5 +31,6 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
+	log.Printf("Running server on %s", server.Addr)
 	log.Fatal(server.ListenAndServe())
 }
