@@ -9,15 +9,23 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/bsquidwrd/TwitchEventSubHandler/helpers"
-	"github.com/bsquidwrd/TwitchEventSubHandler/models"
+	"github.com/bsquidwrd/TwitchEventSubHandler/internal/handlers"
+	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
+	"github.com/bsquidwrd/TwitchEventSubHandler/internal/utils"
 )
 
 func HandleWebhook(w http.ResponseWriter, r *http.Request) {
-	var secret string = os.Getenv("SECRET")
+	secret := os.Getenv("SECRET")
+
+	if secret == "" {
+		slog.Error("Secret could not be found")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	rawBody, err := io.ReadAll(r.Body)
 	if err != nil {
+		slog.Warn("Error reading body from request", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -26,7 +34,7 @@ func HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	messageSignature := r.Header.Get("Twitch-Eventsub-Message-Signature")[7:]
 	messageTimestamp := r.Header.Get("Twitch-Eventsub-Message-Timestamp")
 
-	if !helpers.ValidateSignature([]byte(secret), messageID, messageTimestamp, rawBody, messageSignature) {
+	if !utils.ValidateSignature([]byte(secret), messageID, messageTimestamp, rawBody, messageSignature) {
 		slog.Warn("Invalid request received", "endpoint", html.EscapeString(r.URL.Path))
 		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Fprint(w, "Womp womp")
@@ -78,13 +86,13 @@ func HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
 		fmt.Fprint(w, "Such is life")
 
-		go helpers.HandleRevocation(r, &rawBody)
+		go handlers.HandleRevocation(r, &rawBody)
 
 	case "notification":
 		w.WriteHeader(http.StatusAccepted)
 		fmt.Fprint(w, "Oh that's lit!")
 
-		go helpers.HandleNotification(r, &rawBody)
+		go handlers.HandleNotification(r, &rawBody)
 
 	default:
 		w.WriteHeader(http.StatusForbidden)

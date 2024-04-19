@@ -1,11 +1,11 @@
-package helpers
+package handlers
 
 import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
 
-	"github.com/bsquidwrd/TwitchEventSubHandler/models"
+	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
 func HandleNotification(r *http.Request, rawBody *[]byte) {
