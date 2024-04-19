@@ -27,7 +27,7 @@ func main() {
 	fmt.Println("Starting up!")
 
 	http.HandleFunc("POST /webhook", routes.HandleWebhook)
-	http.HandleFunc("/webhook", handleWebhook)
+	http.HandleFunc("GET /healthcheck", routes.HandleHealthCheck)
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", port),
