@@ -1,3 +1,3 @@
-module github.com/bsquidwrd/twitcheventsub-receiver
+module github.com/bsquidwrd/TwitchEventSubHandler
 
 go 1.22.2

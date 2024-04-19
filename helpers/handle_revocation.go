@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/bsquidwrd/twitcheventsub-receiver/models"
+	"github.com/bsquidwrd/TwitchEventSubHandler/models"
 )
 
 func HandleRevocation(r *http.Request, rawBody *[]byte) {

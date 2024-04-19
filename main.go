@@ -11,8 +11,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/bsquidwrd/twitcheventsub-receiver/helpers"
-	"github.com/bsquidwrd/twitcheventsub-receiver/models"
+	"github.com/bsquidwrd/TwitchEventSubHandler/helpers"
+	"github.com/bsquidwrd/TwitchEventSubHandler/models"
 )
 
 var secret string = "0123456789"
