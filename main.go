@@ -11,11 +11,13 @@ import (
 	"os"
 	"time"
 
+	_ "github.com/joho/godotenv/autoload"
+
 	"github.com/bsquidwrd/TwitchEventSubHandler/helpers"
 	"github.com/bsquidwrd/TwitchEventSubHandler/models"
 )
 
-var secret string = "0123456789"
+var secret string = os.Getenv("SECRET")
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -26,9 +28,9 @@ func main() {
 	http.HandleFunc("/webhook", handleWebhook)
 
 	server := &http.Server{
-		Addr:         ":8080",
+		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
 		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		WriteTimeout: 30 * time.Second,
 	}
 
 	log.Fatal(server.ListenAndServe())
