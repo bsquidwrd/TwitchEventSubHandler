@@ -97,6 +97,8 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
 		fmt.Fprint(w, "Such is life")
 
+		go helpers.HandleRevocation(r, &rawBody)
+
 	case "notification":
 		w.WriteHeader(http.StatusAccepted)
 		fmt.Fprint(w, "Oh that's lit!")

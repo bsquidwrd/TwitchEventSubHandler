@@ -13,14 +13,44 @@ func HandleNotification(r *http.Request, rawBody *[]byte) {
 
 	switch notificationType {
 	case "stream.online":
-		var notification models.StreamUpEvent
+		var notification models.StreamUpEventMessage
 		err := json.Unmarshal(*rawBody, &notification)
 		if err != nil {
 			slog.Error("Could not unmarshal body", err)
 			return
 		}
 
-		slog.Info("User went live", "username", notification.Event.BroadcasterUserName)
+		slog.Info("Channel went live", "username", notification.Event.BroadcasterUserName)
+
+	case "stream.offline":
+		var notification models.StreamDownEventMessage
+		err := json.Unmarshal(*rawBody, &notification)
+		if err != nil {
+			slog.Error("Could not unmarshal body", err)
+			return
+		}
+
+		slog.Info("Channel went offline", "username", notification.Event.BroadcasterUserName)
+
+	case "channel.update":
+		var notification models.ChannelUpdateEventMessage
+		err := json.Unmarshal(*rawBody, &notification)
+		if err != nil {
+			slog.Error("Could not unmarshal body", err)
+			return
+		}
+
+		slog.Info("Channel was updated", "username", notification.Event.BroadcasterUserName)
+
+	case "user.update":
+		var notification models.UserUpdateEventMessage
+		err := json.Unmarshal(*rawBody, &notification)
+		if err != nil {
+			slog.Error("Could not unmarshal body", err)
+			return
+		}
+
+		slog.Info("User was updated", "username", notification.Event.UserName)
 
 	default:
 		return
