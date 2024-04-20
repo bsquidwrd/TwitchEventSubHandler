@@ -25,6 +25,7 @@ func main() {
 
 	dbServices := database.New()
 
+	http.HandleFunc("/", routes.HandleRoot)
 	http.HandleFunc("POST /webhook", routes.HandleWebhook(dbServices))
 	http.HandleFunc("GET /healthcheck", routes.HandleHealthCheck(dbServices))
 
