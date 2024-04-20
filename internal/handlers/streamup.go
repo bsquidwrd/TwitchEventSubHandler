@@ -3,9 +3,10 @@ package handlers
 import (
 	"log/slog"
 
+	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func processStreamUp(notification models.StreamUpEventMessage) {
-	slog.Info("Channel went live", "username", notification.Event.BroadcasterUserName)
+func processStreamUp(dbServices *database.Services, notification models.StreamUpEventMessage) {
+	slog.Info("Channel went live", "username", notification.Event.BroadcasterUserName, "keyvalue", dbServices.Redis.GetString("testkey"))
 }
