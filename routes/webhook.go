@@ -61,7 +61,9 @@ func HandleWebhook(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		if eventsubMessage.Subscription.Cost > 0 {
+		if eventsubMessage.Subscription.Cost > 0 &&
+			eventsubMessage.Subscription.Type != "user.authorization.grant" &&
+			eventsubMessage.Subscription.Type != "user.authorization.revoke" {
 			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprint(w, "That's too rich for my blood")
 			return
@@ -82,17 +84,17 @@ func HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, challenge.Challenge)
 
-	case "revocation":
-		w.WriteHeader(http.StatusAccepted)
-		fmt.Fprint(w, "Such is life")
-
-		go handlers.HandleRevocation(r, &rawBody)
-
 	case "notification":
 		w.WriteHeader(http.StatusAccepted)
 		fmt.Fprint(w, "Oh that's lit!")
 
 		go handlers.HandleNotification(r, &rawBody)
+
+	case "revocation":
+		w.WriteHeader(http.StatusAccepted)
+		fmt.Fprint(w, "Such is life")
+
+		go handlers.HandleRevocation(r, &rawBody)
 
 	default:
 		w.WriteHeader(http.StatusForbidden)
