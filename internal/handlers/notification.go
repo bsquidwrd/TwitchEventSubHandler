@@ -42,6 +42,26 @@ func HandleNotification(r *http.Request, rawBody *[]byte) {
 
 		slog.Info("Channel was updated", "username", notification.Event.BroadcasterUserName)
 
+	case "user.authorization.grant":
+		var notification models.AuthorizationRevokeEventMessage
+		err := json.Unmarshal(*rawBody, &notification)
+		if err != nil {
+			slog.Error("Could not unmarshal body", err)
+			return
+		}
+
+		slog.Info("User granted authorization", "userid", notification.Event.UserID)
+
+	case "user.authorization.revoke":
+		var notification models.AuthorizationRevokeEventMessage
+		err := json.Unmarshal(*rawBody, &notification)
+		if err != nil {
+			slog.Error("Could not unmarshal body", err)
+			return
+		}
+
+		slog.Info("User revoked authorization", "userid", notification.Event.UserID)
+
 	case "user.update":
 		var notification models.UserUpdateEventMessage
 		err := json.Unmarshal(*rawBody, &notification)
