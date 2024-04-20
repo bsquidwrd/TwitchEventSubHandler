@@ -7,6 +7,6 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func processAuthorizationGrant(dbServices *database.Services, notification models.AuthorizationRevokeEventMessage) {
+func processAuthorizationGrant(dbServices *database.Services, notification models.AuthorizationGrantEventMessage) {
 	slog.Info("User granted authorization", "userid", notification.Event.UserID)
 }

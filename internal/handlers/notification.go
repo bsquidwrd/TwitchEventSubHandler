@@ -42,7 +42,7 @@ func HandleNotification(dbServices *database.Services, notificationType string, 
 		processChannelUpdate(dbServices, notification)
 
 	case "user.authorization.grant":
-		var notification models.AuthorizationRevokeEventMessage
+		var notification models.AuthorizationGrantEventMessage
 		err := json.Unmarshal(*rawBody, &notification)
 		if err != nil {
 			slog.Error("Could not unmarshal body", err)
