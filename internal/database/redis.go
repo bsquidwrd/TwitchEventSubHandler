@@ -19,19 +19,26 @@ func newRedisService() *redisService {
 	if err != nil {
 		panic(err)
 	}
+	slog.Info("Redis connected successfully")
+
+	client := redis.NewClient(opt)
+	_, err = client.Get(context.Background(), "thiswillmostlikelyneverexistandthatsokay").Result()
+	if err != nil && err != redis.Nil {
+		panic(err)
+	}
+
 	return &redisService{
-		db: redis.NewClient(opt),
+		db: client,
 	}
 }
 
 func (r *redisService) GetString(key string) string {
 	value, err := r.db.Get(context.Background(), key).Result()
-	if err != nil {
-		if err == redis.Nil {
-			value = ""
-		} else {
-			slog.Error("Error getting key from Redis", "error", err)
-		}
+	switch {
+	case err == redis.Nil:
+		value = ""
+	case err != nil:
+		slog.Error("Error getting key from Redis", err)
 	}
 	return value
 }
@@ -39,7 +46,7 @@ func (r *redisService) GetString(key string) string {
 func (r *redisService) SetString(key string, value string, expiration time.Duration) bool {
 	err := r.db.Set(context.Background(), key, value, expiration).Err()
 	if err != nil {
-		slog.Error("Error getting key from Redis", "error", err)
+		slog.Error("Error getting key from Redis", err)
 	}
 	return err != nil
 }
