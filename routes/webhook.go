@@ -53,21 +53,20 @@ func HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	// Perform cost check
 	// If there's a cost with a revocation, that's okay
 	// We'll be cleaning it up anyway
-	if r.Header.Get("Twitch-Eventsub-Message-Type") != "revocation" {
-		var eventsubMessage models.EventsubMessage
-		err = json.Unmarshal(rawBody, &eventsubMessage)
-		if err != nil {
-			slog.Error("Could not unmarshal body", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		if eventsubMessage.Subscription.Cost > 0 &&
-			eventsubMessage.Subscription.Type != "user.authorization.grant" &&
-			eventsubMessage.Subscription.Type != "user.authorization.revoke" {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprint(w, "That's too rich for my blood")
-			return
-		}
+	var eventsubMessage models.EventsubMessage
+	err = json.Unmarshal(rawBody, &eventsubMessage)
+	if err != nil {
+		slog.Error("Could not unmarshal body", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if eventsubMessage.Subscription.Cost > 0 &&
+		r.Header.Get("Twitch-Eventsub-Message-Type") != "revocation" &&
+		eventsubMessage.Subscription.Type != "user.authorization.grant" &&
+		eventsubMessage.Subscription.Type != "user.authorization.revoke" {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprint(w, "That's too rich for my blood")
+		return
 	}
 
 	switch r.Header.Get("Twitch-Eventsub-Message-Type") {
@@ -84,17 +83,11 @@ func HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, challenge.Challenge)
 
-	case "notification":
+	case "notification", "revocation":
 		w.WriteHeader(http.StatusAccepted)
 		fmt.Fprint(w, "Oh that's lit!")
 
 		go handlers.HandleNotification(r, &rawBody)
-
-	case "revocation":
-		w.WriteHeader(http.StatusAccepted)
-		fmt.Fprint(w, "Such is life")
-
-		go handlers.HandleRevocation(r, &rawBody)
 
 	default:
 		w.WriteHeader(http.StatusForbidden)
