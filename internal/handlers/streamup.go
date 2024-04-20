@@ -8,5 +8,5 @@ import (
 )
 
 func processStreamUp(dbServices *database.Services, notification models.StreamUpEventMessage) {
-	slog.Info("Channel went live", "username", notification.Event.BroadcasterUserName, "keyvalue", dbServices.Redis.GetString("testkey"))
+	slog.Info("Channel went live", "username", notification.Event.BroadcasterUserName)
 }
