@@ -7,5 +7,5 @@ import (
 )
 
 func processAuthorizationRevoke(notification models.AuthorizationRevokeEventMessage) {
-	slog.Info("User granted authorization", "userid", notification.Event.UserID)
+	slog.Info("User revoked authorization", "userid", notification.Event.UserID)
 }
