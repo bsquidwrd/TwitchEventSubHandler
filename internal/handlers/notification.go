@@ -3,13 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"log/slog"
-	"net/http"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func HandleNotification(r *http.Request, rawBody *[]byte) {
-	notificationType := r.Header.Get("Twitch-Eventsub-Subscription-Type")
+func HandleNotification(notificationType string, rawBody *[]byte) {
 
 	switch notificationType {
 	case "stream.online":
@@ -20,7 +18,7 @@ func HandleNotification(r *http.Request, rawBody *[]byte) {
 			return
 		}
 
-		slog.Info("Channel went live", "username", notification.Event.BroadcasterUserName)
+		processStreamUp(notification)
 
 	case "stream.offline":
 		var notification models.StreamDownEventMessage
@@ -30,7 +28,7 @@ func HandleNotification(r *http.Request, rawBody *[]byte) {
 			return
 		}
 
-		slog.Info("Channel went offline", "username", notification.Event.BroadcasterUserName)
+		processStreamDown(notification)
 
 	case "channel.update":
 		var notification models.ChannelUpdateEventMessage
@@ -40,7 +38,7 @@ func HandleNotification(r *http.Request, rawBody *[]byte) {
 			return
 		}
 
-		slog.Info("Channel was updated", "username", notification.Event.BroadcasterUserName)
+		processChannelUpdate(notification)
 
 	case "user.authorization.grant":
 		var notification models.AuthorizationRevokeEventMessage
@@ -50,7 +48,7 @@ func HandleNotification(r *http.Request, rawBody *[]byte) {
 			return
 		}
 
-		slog.Info("User granted authorization", "userid", notification.Event.UserID)
+		processAuthorizationGrant(notification)
 
 	case "user.authorization.revoke":
 		var notification models.AuthorizationRevokeEventMessage
@@ -60,7 +58,7 @@ func HandleNotification(r *http.Request, rawBody *[]byte) {
 			return
 		}
 
-		slog.Info("User revoked authorization", "userid", notification.Event.UserID)
+		processAuthorizationRevoke(notification)
 
 	case "user.update":
 		var notification models.UserUpdateEventMessage
@@ -70,7 +68,7 @@ func HandleNotification(r *http.Request, rawBody *[]byte) {
 			return
 		}
 
-		slog.Info("User was updated", "username", notification.Event.UserName)
+		processUserUpdate(notification)
 
 	default:
 		return

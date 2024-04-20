@@ -87,7 +87,7 @@ func HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
 		fmt.Fprint(w, "Oh that's lit!")
 
-		go handlers.HandleNotification(r, &rawBody)
+		go handlers.HandleNotification(r.Header.Get("Twitch-Eventsub-Subscription-Type"), &rawBody)
 
 	default:
 		w.WriteHeader(http.StatusForbidden)
