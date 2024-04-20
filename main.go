@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
+	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
 	"github.com/bsquidwrd/TwitchEventSubHandler/routes"
 )
 
@@ -22,8 +23,10 @@ func main() {
 		port = "8080"
 	}
 
-	http.HandleFunc("POST /webhook", routes.HandleWebhook)
-	http.HandleFunc("GET /healthcheck", routes.HandleHealthCheck)
+	dbServices := database.New()
+
+	http.HandleFunc("POST /webhook", routes.HandleWebhook(dbServices))
+	http.HandleFunc("GET /healthcheck", routes.HandleHealthCheck(dbServices))
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", port),

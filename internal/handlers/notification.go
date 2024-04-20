@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"log/slog"
 
+	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func HandleNotification(notificationType string, rawBody *[]byte) {
+func HandleNotification(dbServices *database.Services, notificationType string, rawBody *[]byte) {
 
 	switch notificationType {
 	case "stream.online":
@@ -18,7 +19,7 @@ func HandleNotification(notificationType string, rawBody *[]byte) {
 			return
 		}
 
-		processStreamUp(notification)
+		processStreamUp(dbServices, notification)
 
 	case "stream.offline":
 		var notification models.StreamDownEventMessage
@@ -28,7 +29,7 @@ func HandleNotification(notificationType string, rawBody *[]byte) {
 			return
 		}
 
-		processStreamDown(notification)
+		processStreamDown(dbServices, notification)
 
 	case "channel.update":
 		var notification models.ChannelUpdateEventMessage
@@ -38,7 +39,7 @@ func HandleNotification(notificationType string, rawBody *[]byte) {
 			return
 		}
 
-		processChannelUpdate(notification)
+		processChannelUpdate(dbServices, notification)
 
 	case "user.authorization.grant":
 		var notification models.AuthorizationRevokeEventMessage
@@ -48,7 +49,7 @@ func HandleNotification(notificationType string, rawBody *[]byte) {
 			return
 		}
 
-		processAuthorizationGrant(notification)
+		processAuthorizationGrant(dbServices, notification)
 
 	case "user.authorization.revoke":
 		var notification models.AuthorizationRevokeEventMessage
@@ -58,7 +59,7 @@ func HandleNotification(notificationType string, rawBody *[]byte) {
 			return
 		}
 
-		processAuthorizationRevoke(notification)
+		processAuthorizationRevoke(dbServices, notification)
 
 	case "user.update":
 		var notification models.UserUpdateEventMessage
@@ -68,7 +69,7 @@ func HandleNotification(notificationType string, rawBody *[]byte) {
 			return
 		}
 
-		processUserUpdate(notification)
+		processUserUpdate(dbServices, notification)
 
 	default:
 		return
