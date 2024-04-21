@@ -69,13 +69,18 @@ func getAuthKey(dbServices *database.Service) string {
 }
 
 func getNewAuthKey() (*clientCredentials, error) {
-	requestUrl := "https://id.twitch.tv/oauth2/token"
+	tokenUrl := "https://id.twitch.tv/oauth2/token"
+	if os.Getenv("API_URL") != "" {
+		tokenUrl = fmt.Sprintf("%s/auth/token", os.Getenv("API_URL"))
+	}
+
+	requestUrl, _ := url.ParseRequestURI(tokenUrl)
 	data := url.Values{}
 	data.Set("client_id", clientID)
 	data.Set("client_secret", clientSecret)
 	data.Set("grant_type", "client_credentials")
 
-	request, err := http.NewRequest(http.MethodPost, requestUrl, strings.NewReader(data.Encode()))
+	request, err := http.NewRequest(http.MethodPost, requestUrl.String(), strings.NewReader(data.Encode()))
 	if err != nil {
 		return &clientCredentials{}, err
 	}
@@ -102,8 +107,13 @@ func getNewAuthKey() (*clientCredentials, error) {
 }
 
 func CallApi(dbServices *database.Service, method string, endpoint string, data string, parameters *url.Values) ([]byte, error) {
-	requestUrl, _ := url.ParseRequestURI("https://api.twitch.tv/")
-	requestUrl.Path = endpoint
+	baseUrl := "https://api.twitch.tv/helix/"
+	if os.Getenv("API_URL") != "" {
+		baseUrl = fmt.Sprintf("%s/mock/", os.Getenv("API_URL"))
+	}
+
+	requestUrl, _ := url.ParseRequestURI(baseUrl)
+	requestUrl.Path += endpoint
 	requestUrl.RawQuery = parameters.Encode()
 
 	if method == "" {
