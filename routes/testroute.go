@@ -9,7 +9,7 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/twitch"
 )
 
-func HandleTestRoute(dbServices *database.Services) func(http.ResponseWriter, *http.Request) {
+func HandleTestRoute(dbServices *database.Service) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		parameters := r.URL.Query()
 		endpoint := parameters.Get("endpoint")
@@ -22,7 +22,7 @@ func HandleTestRoute(dbServices *database.Services) func(http.ResponseWriter, *h
 			parameters.Set("login", "bsquidwrd")
 		}
 
-		result, err := twitch.CallApi(dbServices, endpoint, "", &parameters)
+		result, err := twitch.CallApi(dbServices, http.MethodGet, endpoint, nil, &parameters)
 		if err != nil {
 			slog.Error("Error calling API", err)
 		}

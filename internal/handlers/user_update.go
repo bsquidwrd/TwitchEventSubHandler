@@ -7,6 +7,6 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func processUserUpdate(dbServices *database.Services, notification models.UserUpdateEventMessage) {
+func processUserUpdate(dbServices *database.Service, notification models.UserUpdateEventMessage) {
 	slog.Info("User was updated", "username", notification.Event.UserName)
 }

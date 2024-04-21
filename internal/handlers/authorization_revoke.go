@@ -7,6 +7,6 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func processAuthorizationRevoke(dbServices *database.Services, notification models.AuthorizationRevokeEventMessage) {
+func processAuthorizationRevoke(dbServices *database.Service, notification models.AuthorizationRevokeEventMessage) {
 	slog.Info("User revoked authorization", "userid", notification.Event.UserID)
 }

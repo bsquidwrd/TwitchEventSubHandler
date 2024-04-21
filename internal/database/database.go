@@ -1,15 +1,13 @@
 package database
 
-import "sync"
-
-type Services struct {
-	Redis    *redisService
-	AuthLock *sync.Mutex
+type Service struct {
+	Redis  *redisService
+	Twitch *twitchService
 }
 
-func New() *Services {
-	return &Services{
-		Redis:    newRedisService(),
-		AuthLock: &sync.Mutex{},
+func New() *Service {
+	return &Service{
+		Redis:  newRedisService(),
+		Twitch: newTwitchService(),
 	}
 }

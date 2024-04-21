@@ -7,6 +7,6 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func processStreamDown(dbServices *database.Services, notification models.StreamDownEventMessage) {
+func processStreamDown(dbServices *database.Service, notification models.StreamDownEventMessage) {
 	slog.Info("Channel went offline", "username", notification.Event.BroadcasterUserName)
 }

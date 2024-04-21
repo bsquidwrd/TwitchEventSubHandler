@@ -8,7 +8,7 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func HandleNotification(dbServices *database.Services, notificationType string, rawBody *[]byte) {
+func HandleNotification(dbServices *database.Service, notificationType string, rawBody *[]byte) {
 
 	switch notificationType {
 	case "stream.online":

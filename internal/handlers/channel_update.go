@@ -7,6 +7,6 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func processChannelUpdate(dbServices *database.Services, notification models.ChannelUpdateEventMessage) {
+func processChannelUpdate(dbServices *database.Service, notification models.ChannelUpdateEventMessage) {
 	slog.Info("Channel was updated", "username", notification.Event.BroadcasterUserName)
 }

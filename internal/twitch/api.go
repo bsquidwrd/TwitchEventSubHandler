@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -27,7 +28,7 @@ type clientCredentials struct {
 
 func fakeDBCall() (string, error) { return "", nil }
 
-func getAuthKey(dbServices *database.Services) string {
+func getAuthKey(dbServices *database.Service) string {
 	redisKey := "twitch:api:authkey"
 	existingAuthKey := dbServices.Redis.GetString(redisKey)
 
@@ -44,10 +45,8 @@ func getAuthKey(dbServices *database.Services) string {
 		return dbKey
 	}
 
-	gotAuthLock := dbServices.AuthLock.TryLock()
-
-	if gotAuthLock {
-		defer dbServices.AuthLock.Unlock()
+	if dbServices.Twitch.AuthLock.TryLock() {
+		defer dbServices.Twitch.AuthLock.Unlock()
 		newAuthKey, err := getNewAuthKey()
 		if err != nil {
 			slog.Error("Error getting new Auth Key", err)
@@ -58,8 +57,8 @@ func getAuthKey(dbServices *database.Services) string {
 			return newAuthKey.AccessToken
 		}
 	} else {
-		dbServices.AuthLock.Lock()
-		dbServices.AuthLock.Unlock()
+		dbServices.Twitch.AuthLock.Lock()
+		dbServices.Twitch.AuthLock.Unlock()
 		return getAuthKey(dbServices)
 	}
 
@@ -98,19 +97,38 @@ func getNewAuthKey() (*clientCredentials, error) {
 	return &credentials, nil
 }
 
-func CallApi(dbServices *database.Services, endpoint string, data string, parameters *url.Values) ([]byte, error) {
+func CallApi(dbServices *database.Service, method string, endpoint string, data *interface{}, parameters *url.Values) ([]byte, error) {
 	requestUrl, _ := url.ParseRequestURI("https://api.twitch.tv/")
 	requestUrl.Path = endpoint
 	requestUrl.RawQuery = parameters.Encode()
 
-	request, err := http.NewRequest(http.MethodGet, requestUrl.String(), strings.NewReader(data))
-	authKey := getAuthKey(dbServices)
+	if method == "" {
+		method = http.MethodGet
+	}
+
+	var bodyData *strings.Reader = nil
+	if data != nil {
+		rawBody, err := json.Marshal(data)
+		if err == nil {
+			bodyData = strings.NewReader(string(rawBody))
+		}
+	}
+
+	request, err := http.NewRequest(method, requestUrl.String(), bodyData)
 	request.Header.Add("Client-ID", clientID)
-	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", authKey))
+	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", getAuthKey(dbServices)))
 
 	if err != nil {
 		slog.Error("Error assembling API request", err)
 		return nil, err
+	}
+
+	// Make sure there's no existing rate limit in place
+	if dbServices.Twitch.RatelimitLock.TryLock() {
+		dbServices.Twitch.RatelimitLock.Unlock()
+	} else {
+		dbServices.Twitch.AuthLock.Lock()
+		dbServices.Twitch.AuthLock.Unlock()
 	}
 
 	client := &http.Client{}
@@ -121,11 +139,24 @@ func CallApi(dbServices *database.Services, endpoint string, data string, parame
 	}
 	defer response.Body.Close()
 
-	rawBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		slog.Error("Error reading API body", err)
-		return nil, err
+	if response.StatusCode == http.StatusTooManyRequests {
+		ratelimitResetValue, err := strconv.ParseInt(response.Header.Get("Ratelimit-Reset"), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		slog.Info("Twitch API rate limit hit, waiting it out", "reset", ratelimitResetValue)
+		ratelimitReset := time.Unix(ratelimitResetValue, 0)
+		time.After(ratelimitReset.Sub(time.Now().UTC()))
+		return CallApi(dbServices, method, endpoint, data, parameters)
+	} else if response.StatusCode == http.StatusOK {
+		rawBody, err := io.ReadAll(response.Body)
+		if err != nil {
+			slog.Error("Error reading API body", err)
+			return nil, err
+		}
+
+		return rawBody, nil
 	}
 
-	return rawBody, nil
+	return nil, fmt.Errorf("API call was not successful")
 }
