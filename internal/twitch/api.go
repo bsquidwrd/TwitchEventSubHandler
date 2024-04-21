@@ -57,6 +57,8 @@ func getAuthKey(dbServices *database.Service) string {
 			return newAuthKey.AccessToken
 		}
 	} else {
+		// If we couldn't get a lock on it, wait until we can
+		// Not being able to get a lock means someone else is refreshing the auth key
 		dbServices.Twitch.AuthLock.Lock()
 		dbServices.Twitch.AuthLock.Unlock()
 		return getAuthKey(dbServices)
@@ -127,6 +129,8 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 	if dbServices.Twitch.RatelimitLock.TryLock() {
 		dbServices.Twitch.RatelimitLock.Unlock()
 	} else {
+		// If we couldn't get a lock on it, wait until we can
+		// Not being able to get a lock means a rate limit is in effect
 		dbServices.Twitch.AuthLock.Lock()
 		dbServices.Twitch.AuthLock.Unlock()
 	}
