@@ -87,7 +87,6 @@ func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http
 
 		// Perform cost check
 		// If there's a cost with a revocation, that's okay
-		// We'll be cleaning up anyway
 		if eventsubMessage.Subscription.Cost > 0 &&
 			r.Header.Get("Twitch-Eventsub-Message-Type") != "revocation" &&
 			eventsubMessage.Subscription.Type != "user.authorization.grant" &&
