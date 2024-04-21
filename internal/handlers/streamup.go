@@ -7,6 +7,6 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func processStreamUp(dbServices *database.Service, notification models.StreamUpEventMessage) {
+func processStreamUp(dbServices *database.Service, notification *models.StreamUpEventMessage) {
 	slog.Info("Channel went live", "username", notification.Event.BroadcasterUserName)
 }

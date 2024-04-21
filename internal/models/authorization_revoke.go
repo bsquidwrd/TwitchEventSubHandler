@@ -11,6 +11,6 @@ type AuthorizationRevokeEvent struct {
 
 // Renamed from AuthorizationRevokeEventSubResponse to AuthorizationRevokeEventMessage to make more sense in my context
 type AuthorizationRevokeEventMessage struct {
-	Subscription EventsubSubscription      `json:"subscription"`
-	Event        *AuthorizationRevokeEvent `json:"event,omitempty"`
+	Subscription EventsubSubscription     `json:"subscription"`
+	Event        AuthorizationRevokeEvent `json:"event,omitempty"`
 }

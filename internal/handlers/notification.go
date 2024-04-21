@@ -19,7 +19,7 @@ func HandleNotification(dbServices *database.Service, notificationType string, r
 			return
 		}
 
-		processStreamUp(dbServices, notification)
+		processStreamUp(dbServices, &notification)
 
 	case "stream.offline":
 		var notification models.StreamDownEventMessage
@@ -29,7 +29,7 @@ func HandleNotification(dbServices *database.Service, notificationType string, r
 			return
 		}
 
-		processStreamDown(dbServices, notification)
+		processStreamDown(dbServices, &notification)
 
 	case "channel.update":
 		var notification models.ChannelUpdateEventMessage
@@ -39,7 +39,7 @@ func HandleNotification(dbServices *database.Service, notificationType string, r
 			return
 		}
 
-		processChannelUpdate(dbServices, notification)
+		processChannelUpdate(dbServices, &notification)
 
 	case "user.authorization.grant":
 		var notification models.AuthorizationGrantEventMessage
@@ -49,7 +49,7 @@ func HandleNotification(dbServices *database.Service, notificationType string, r
 			return
 		}
 
-		processAuthorizationGrant(dbServices, notification)
+		processAuthorizationGrant(dbServices, &notification)
 
 	case "user.authorization.revoke":
 		var notification models.AuthorizationRevokeEventMessage
@@ -59,7 +59,7 @@ func HandleNotification(dbServices *database.Service, notificationType string, r
 			return
 		}
 
-		processAuthorizationRevoke(dbServices, notification)
+		processAuthorizationRevoke(dbServices, &notification)
 
 	case "user.update":
 		var notification models.UserUpdateEventMessage
@@ -69,7 +69,7 @@ func HandleNotification(dbServices *database.Service, notificationType string, r
 			return
 		}
 
-		processUserUpdate(dbServices, notification)
+		processUserUpdate(dbServices, &notification)
 
 	default:
 		return

@@ -8,6 +8,6 @@ type AuthorizationGrantEvent struct {
 }
 
 type AuthorizationGrantEventMessage struct {
-	Subscription EventsubSubscription     `json:"subscription"`
-	Event        *AuthorizationGrantEvent `json:"event,omitempty"`
+	Subscription EventsubSubscription    `json:"subscription"`
+	Event        AuthorizationGrantEvent `json:"event,omitempty"`
 }
