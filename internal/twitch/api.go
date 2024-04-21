@@ -44,10 +44,10 @@ func getAuthKey(dbServices *database.Services) string {
 		return dbKey
 	}
 
-	gotAuthLock := dbServices.Twitch.AuthLock.TryLock()
+	gotAuthLock := dbServices.AuthLock.TryLock()
 
 	if gotAuthLock {
-		defer dbServices.Twitch.AuthLock.Unlock()
+		defer dbServices.AuthLock.Unlock()
 		newAuthKey, err := getNewAuthKey()
 		if err != nil {
 			slog.Error("Error getting new Auth Key", err)
@@ -58,8 +58,8 @@ func getAuthKey(dbServices *database.Services) string {
 			return newAuthKey.AccessToken
 		}
 	} else {
-		dbServices.Twitch.AuthLock.Lock()
-		dbServices.Twitch.AuthLock.Unlock()
+		dbServices.AuthLock.Lock()
+		dbServices.AuthLock.Unlock()
 		return getAuthKey(dbServices)
 	}
 

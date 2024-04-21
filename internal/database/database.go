@@ -1,13 +1,15 @@
 package database
 
+import "sync"
+
 type Services struct {
-	Redis  *redisService
-	Twitch *twitchService
+	Redis    *redisService
+	AuthLock *sync.Mutex
 }
 
 func New() *Services {
 	return &Services{
-		Redis:  newRedisService(),
-		Twitch: newTwitchService(),
+		Redis:    newRedisService(),
+		AuthLock: &sync.Mutex{},
 	}
 }
