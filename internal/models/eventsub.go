@@ -42,3 +42,10 @@ type EventsubSubscriptionVerification struct {
 	Challenge    string               `json:"challenge"`
 	Subscription EventsubSubscription `json:"subscription"`
 }
+
+type EventsubSubscriptionList struct {
+	Total        int                    `json:"total"`
+	Data         []EventsubSubscription `json:"data"`
+	TotalCost    int                    `json:"total_cost"`
+	MaxTotalCost int                    `json:"max_total_cost"`
+}
