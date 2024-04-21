@@ -12,15 +12,16 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/handlers"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
+	"github.com/bsquidwrd/TwitchEventSubHandler/internal/twitch"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/utils"
 )
 
 func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		secret := os.Getenv("SECRET")
+		secret := os.Getenv("EVENTSUBSECRET")
 
 		if secret == "" {
-			slog.Error("Secret could not be found")
+			slog.Error("EVENTSUBSECRET could not be found")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -39,7 +40,6 @@ func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http
 		if !utils.ValidateSignature([]byte(secret), messageID, messageTimestamp, rawBody, messageSignature) {
 			slog.Warn("Invalid request received", "endpoint", html.EscapeString(r.URL.Path))
 			w.WriteHeader(http.StatusUnauthorized)
-			fmt.Fprint(w, "Womp womp")
 			return
 		}
 
@@ -52,22 +52,11 @@ func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http
 
 		w.Header().Add("Content-Type", "text/plain")
 
-		// Perform cost check
-		// If there's a cost with a revocation, that's okay
-		// We'll be cleaning it up anyway
 		var eventsubMessage models.EventsubMessage
 		err = json.Unmarshal(rawBody, &eventsubMessage)
 		if err != nil {
 			slog.Error("Could not unmarshal body", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		if eventsubMessage.Subscription.Cost > 0 &&
-			r.Header.Get("Twitch-Eventsub-Message-Type") != "revocation" &&
-			eventsubMessage.Subscription.Type != "user.authorization.grant" &&
-			eventsubMessage.Subscription.Type != "user.authorization.revoke" {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprint(w, "That's too rich for my blood")
 			return
 		}
 
@@ -94,6 +83,16 @@ func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http
 		default:
 			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprint(w, "Womp womp")
+		}
+
+		// Perform cost check
+		// If there's a cost with a revocation, that's okay
+		// We'll be cleaning up anyway
+		if eventsubMessage.Subscription.Cost > 0 &&
+			r.Header.Get("Twitch-Eventsub-Message-Type") != "revocation" &&
+			eventsubMessage.Subscription.Type != "user.authorization.grant" &&
+			eventsubMessage.Subscription.Type != "user.authorization.revoke" {
+			twitch.DeleteSubscription(dbServices, eventsubMessage.Subscription.ID)
 		}
 	}
 }
