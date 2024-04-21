@@ -10,7 +10,6 @@ import (
 )
 
 func HandleTestRoute(dbServices *database.Services) func(http.ResponseWriter, *http.Request) {
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		parameters := r.URL.Query()
 		endpoint := parameters.Get("endpoint")

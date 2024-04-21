@@ -1,5 +1,5 @@
 FROM golang:alpine AS builder
-RUN apk update && apk add --no-cache git
+RUN apk update && apk add --no-cache git ca-certificates
 WORKDIR $GOPATH/src/
 COPY . .
 RUN go get -d -v
@@ -8,6 +8,7 @@ RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/healthcheck "gi
 
 
 FROM scratch
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/bin/runner /go/bin/runner
 COPY --from=builder /go/bin/healthcheck /go/bin/healthcheck
 
