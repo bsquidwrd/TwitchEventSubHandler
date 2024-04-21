@@ -22,7 +22,7 @@ func HandleTestRoute(dbServices *database.Service) func(http.ResponseWriter, *ht
 			parameters.Set("login", "bsquidwrd")
 		}
 
-		result, err := twitch.CallApi(dbServices, http.MethodGet, endpoint, nil, &parameters)
+		result, err := twitch.CallApi(dbServices, http.MethodGet, endpoint, "", &parameters)
 		if err != nil {
 			slog.Error("Error calling API", err)
 		}

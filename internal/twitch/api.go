@@ -52,7 +52,8 @@ func getAuthKey(dbServices *database.Service) string {
 			slog.Error("Error getting new Auth Key", err)
 		}
 		if newAuthKey.ExpiresIn > 0 {
-			dbServices.Redis.SetString(redisKey, newAuthKey.AccessToken, time.Duration(newAuthKey.ExpiresIn))
+			expirationDuration := time.Duration(newAuthKey.ExpiresIn) * time.Second
+			dbServices.Redis.SetString(redisKey, newAuthKey.AccessToken, expirationDuration)
 			// set value in db too
 			return newAuthKey.AccessToken
 		}
@@ -78,6 +79,7 @@ func getNewAuthKey() (*clientCredentials, error) {
 	if err != nil {
 		return &clientCredentials{}, err
 	}
+	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	client := &http.Client{}
 	response, err := client.Do(request)
@@ -99,7 +101,7 @@ func getNewAuthKey() (*clientCredentials, error) {
 	return &credentials, nil
 }
 
-func CallApi(dbServices *database.Service, method string, endpoint string, data *interface{}, parameters *url.Values) ([]byte, error) {
+func CallApi(dbServices *database.Service, method string, endpoint string, data string, parameters *url.Values) ([]byte, error) {
 	requestUrl, _ := url.ParseRequestURI("https://api.twitch.tv/")
 	requestUrl.Path = endpoint
 	requestUrl.RawQuery = parameters.Encode()
@@ -108,15 +110,7 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 		method = http.MethodGet
 	}
 
-	var bodyData *strings.Reader = nil
-	if data != nil {
-		rawBody, err := json.Marshal(data)
-		if err == nil {
-			bodyData = strings.NewReader(string(rawBody))
-		}
-	}
-
-	request, err := http.NewRequest(method, requestUrl.String(), bodyData)
+	request, err := http.NewRequest(method, requestUrl.String(), strings.NewReader(data))
 	request.Header.Add("Client-ID", clientID)
 	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", getAuthKey(dbServices)))
 
@@ -150,9 +144,11 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 		}
 		slog.Info("Twitch API rate limit hit, waiting it out", "reset", ratelimitResetValue)
 		ratelimitReset := time.Unix(ratelimitResetValue, 0)
+		dbServices.Twitch.RatelimitLock.Lock()
 		time.After(ratelimitReset.Sub(time.Now().UTC()))
+		dbServices.Twitch.RatelimitLock.Unlock()
 		return CallApi(dbServices, method, endpoint, data, parameters)
-	} else if response.StatusCode == http.StatusOK {
+	} else {
 		rawBody, err := io.ReadAll(response.Body)
 		if err != nil {
 			slog.Error("Error reading API body", err)
@@ -161,6 +157,4 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 
 		return rawBody, nil
 	}
-
-	return nil, fmt.Errorf("API call was not successful")
 }
