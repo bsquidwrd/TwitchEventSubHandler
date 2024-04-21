@@ -84,6 +84,7 @@ func getNewAuthKey() (*clientCredentials, error) {
 	if err != nil {
 		return &clientCredentials{}, err
 	}
+	request.Header.Add("Accept", "application/json")
 	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	client := &http.Client{}
@@ -106,7 +107,7 @@ func getNewAuthKey() (*clientCredentials, error) {
 	return &credentials, nil
 }
 
-func CallApi(dbServices *database.Service, method string, endpoint string, data string, parameters *url.Values) ([]byte, error) {
+func CallApi(dbServices *database.Service, method string, endpoint string, data string, parameters *url.Values) (int, []byte, error) {
 	baseUrl := "https://api.twitch.tv/helix/"
 	if os.Getenv("API_URL") != "" {
 		baseUrl = fmt.Sprintf("%s/mock/", os.Getenv("API_URL"))
@@ -114,6 +115,10 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 
 	requestUrl, _ := url.ParseRequestURI(baseUrl)
 	requestUrl.Path += endpoint
+
+	if parameters == nil {
+		parameters = &url.Values{}
+	}
 	requestUrl.RawQuery = parameters.Encode()
 
 	if method == "" {
@@ -121,12 +126,14 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 	}
 
 	request, err := http.NewRequest(method, requestUrl.String(), strings.NewReader(data))
+	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Content-Type", "application/json")
 	request.Header.Add("Client-ID", clientID)
 	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", getAuthKey(dbServices)))
 
 	if err != nil {
 		slog.Error("Error assembling API request", err)
-		return nil, err
+		return 0, nil, err
 	}
 
 	// Make sure there's no existing rate limit in place
@@ -143,14 +150,14 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 	response, err := client.Do(request)
 	if err != nil {
 		slog.Error("Error calling API", err)
-		return nil, err
+		return 0, nil, err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode == http.StatusTooManyRequests {
 		ratelimitResetValue, err := strconv.ParseInt(response.Header.Get("Ratelimit-Reset"), 10, 64)
 		if err != nil {
-			return nil, err
+			return 0, nil, err
 		}
 		slog.Info("Twitch API rate limit hit, waiting it out", "reset", ratelimitResetValue)
 		ratelimitReset := time.Unix(ratelimitResetValue, 0)
@@ -162,9 +169,15 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 		rawBody, err := io.ReadAll(response.Body)
 		if err != nil {
 			slog.Error("Error reading API body", err)
-			return nil, err
+			return 0, nil, err
 		}
 
-		return rawBody, nil
+		return response.StatusCode, rawBody, nil
 	}
+}
+
+func DeleteSubscription(dbServices *database.Service, id string) (int, []byte, error) {
+	parameters := &url.Values{}
+	parameters.Add("id", id)
+	return CallApi(dbServices, http.MethodDelete, "eventsub/subscriptions", "", parameters)
 }
