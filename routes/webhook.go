@@ -92,7 +92,7 @@ func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http
 			r.Header.Get("Twitch-Eventsub-Message-Type") != "revocation" &&
 			eventsubMessage.Subscription.Type != "user.authorization.grant" &&
 			eventsubMessage.Subscription.Type != "user.authorization.revoke" {
-			twitch.DeleteSubscription(dbServices, eventsubMessage.Subscription.ID)
+			go twitch.DeleteSubscription(dbServices, eventsubMessage.Subscription.ID)
 		}
 	}
 }
