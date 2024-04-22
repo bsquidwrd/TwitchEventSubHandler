@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/handlers"
@@ -36,6 +37,7 @@ func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http
 		messageID := r.Header.Get("Twitch-Eventsub-Message-Id")
 		messageSignature := r.Header.Get("Twitch-Eventsub-Message-Signature")[7:]
 		messageTimestamp := r.Header.Get("Twitch-Eventsub-Message-Timestamp")
+		messageType := r.Header.Get("Twitch-Eventsub-Message-Type")
 
 		if !utils.ValidateSignature([]byte(secret), messageID, messageTimestamp, rawBody, messageSignature) {
 			slog.Warn("Invalid request received", "endpoint", html.EscapeString(r.URL.Path))
@@ -43,15 +45,30 @@ func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http
 			return
 		}
 
+		parsedTimestamp, err := time.Parse(time.RFC3339, messageTimestamp)
+		if err != nil {
+			slog.Warn("Invalid Message Timestamp detected", "timestamp", messageTimestamp, "error", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		// If a message is older than 10 minutes, don't do anything with it
+		if time.Now().UTC().Sub(parsedTimestamp).Minutes() >= 10 {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, "A bit stale, but thanks")
+			return
+		}
+
 		slog.Info(
 			"Successful request received",
 			"endpoint", html.EscapeString(r.URL.Path),
-			"type", r.Header.Get("Twitch-Eventsub-Message-Type"),
+			"type", messageType,
 			"subscription", r.Header.Get("Twitch-Eventsub-Subscription-Type"),
 		)
 
 		w.Header().Add("Content-Type", "text/plain")
 
+		// Verify we even have the right kind of base body
 		var eventsubMessage models.EventsubMessage
 		err = json.Unmarshal(rawBody, &eventsubMessage)
 		if err != nil {
@@ -60,7 +77,8 @@ func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http
 			return
 		}
 
-		switch r.Header.Get("Twitch-Eventsub-Message-Type") {
+		// Depending on the message, handle it differently
+		switch messageType {
 
 		case "webhook_callback_verification":
 			var challenge models.EventsubSubscriptionVerification
