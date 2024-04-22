@@ -1,1 +1,1 @@
-twitch event trigger stream.online --forward-address http://localhost:8080/webhook --secret 0123456789
+twitch event trigger stream.online --forward-address http://localhost:8080/webhook --secret 0123456789 --from-user 22812120 --to-user 22812120
