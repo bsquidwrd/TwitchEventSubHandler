@@ -28,7 +28,6 @@ func main() {
 	http.HandleFunc("/", routes.HandleRoot)
 	http.HandleFunc("POST /webhook", routes.HandleWebhook(dbServices))
 	http.HandleFunc("GET /healthcheck", routes.HandleHealthCheck(dbServices))
-	http.HandleFunc("GET /test", routes.HandleTestRoute(dbServices))
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", port),
