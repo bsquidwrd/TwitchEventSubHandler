@@ -10,17 +10,17 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type redisService struct {
+type cacheService struct {
 	db *redis.Client
 }
 
-func newRedisService() *redisService {
-	redisUrl := os.Getenv("REDIS_CONNECTIONSTRING")
-	opt, err := redis.ParseURL(redisUrl)
+func newCacheService() *cacheService {
+	cacheUrl := os.Getenv("CACHE_CONNECTIONSTRING")
+	opt, err := redis.ParseURL(cacheUrl)
 	if err != nil {
 		panic(err)
 	}
-	slog.Info("Redis connected successfully")
+	slog.Info("Cache connected successfully")
 
 	client := redis.NewClient(opt)
 	_, err = client.Get(context.Background(), "thiswillmostlikelyneverexistandthatsokay").Result()
@@ -28,12 +28,12 @@ func newRedisService() *redisService {
 		panic(err)
 	}
 
-	return &redisService{
+	return &cacheService{
 		db: client,
 	}
 }
 
-func (r *redisService) TakeLock(key string, value string, expiration time.Duration) bool {
+func (r *cacheService) TakeLock(key string, value string, expiration time.Duration) bool {
 	lockKey := fmt.Sprintf("lock:%s", key)
 	// Have a reasonable default a lock can be taken for
 	if expiration > (1 * time.Minute) {
@@ -46,7 +46,7 @@ func (r *redisService) TakeLock(key string, value string, expiration time.Durati
 	return result
 }
 
-func (r *redisService) ReleaseLock(key string, value string) bool {
+func (r *cacheService) ReleaseLock(key string, value string) bool {
 	lockKey := fmt.Sprintf("lock:%s", key)
 	existingValue := r.GetString(lockKey)
 	if value == existingValue {
@@ -55,48 +55,48 @@ func (r *redisService) ReleaseLock(key string, value string) bool {
 	return false
 }
 
-func (r *redisService) Delete(key string) bool {
+func (r *cacheService) Delete(key string) bool {
 	err := r.db.Del(context.Background(), key).Err()
 	if err != nil {
-		slog.Error("Error settings key in Redis", err)
+		slog.Error("Error setting key in Cache", err)
 	}
 	return err != nil
 }
 
-func (r *redisService) GetString(key string) string {
+func (r *cacheService) GetString(key string) string {
 	value, err := r.db.Get(context.Background(), key).Result()
 	switch {
 	case err == redis.Nil:
 		value = ""
 	case err != nil:
-		slog.Error("Error getting key from Redis", err)
+		slog.Error("Error getting key from Cache", err)
 	}
 	return value
 }
 
-func (r *redisService) SetString(key string, value string, expiration time.Duration) bool {
+func (r *cacheService) SetString(key string, value string, expiration time.Duration) bool {
 	err := r.db.Set(context.Background(), key, value, expiration).Err()
 	if err != nil {
-		slog.Error("Error settings key in Redis", err)
+		slog.Error("Error setting key in Cache", err)
 	}
 	return err != nil
 }
 
-func (r *redisService) GetBool(key string) bool {
+func (r *cacheService) GetBool(key string) bool {
 	value, err := r.db.Get(context.Background(), key).Bool()
 	switch {
 	case err == redis.Nil:
 		value = false
 	case err != nil:
-		slog.Error("Error getting key from Redis", err)
+		slog.Error("Error getting key from Cache", err)
 	}
 	return value
 }
 
-func (r *redisService) SetBool(key string, value bool, expiration time.Duration) bool {
+func (r *cacheService) SetBool(key string, value bool, expiration time.Duration) bool {
 	err := r.db.Set(context.Background(), key, value, expiration).Err()
 	if err != nil {
-		slog.Error("Error settings key in Redis", err)
+		slog.Error("Error setting key in Cache", err)
 	}
 	return err != nil
 }

@@ -29,8 +29,8 @@ type clientCredentials struct {
 func fakeDBCall() (string, error) { return "", nil }
 
 func getAuthKey(dbServices *database.Service) string {
-	redisKey := "twitch:api:authkey"
-	existingAuthKey := dbServices.Redis.GetString(redisKey)
+	cachedKey := "twitch:api:authkey"
+	existingAuthKey := dbServices.Cache.GetString(cachedKey)
 
 	if existingAuthKey != "" {
 		return existingAuthKey
@@ -41,7 +41,7 @@ func getAuthKey(dbServices *database.Service) string {
 		slog.Error("Error getting Auth key from DB", err)
 	}
 	if dbKey != "" {
-		dbServices.Redis.SetString(redisKey, dbKey, 5*time.Minute)
+		dbServices.Cache.SetString(cachedKey, dbKey, 5*time.Minute)
 		return dbKey
 	}
 
@@ -53,7 +53,7 @@ func getAuthKey(dbServices *database.Service) string {
 		}
 		if newAuthKey.ExpiresIn > 0 {
 			expirationDuration := time.Duration(newAuthKey.ExpiresIn) * time.Second
-			dbServices.Redis.SetString(redisKey, newAuthKey.AccessToken, expirationDuration)
+			dbServices.Cache.SetString(cachedKey, newAuthKey.AccessToken, expirationDuration)
 			// set value in db too
 			return newAuthKey.AccessToken
 		}

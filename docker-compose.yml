@@ -1,0 +1,27 @@
+---
+version: "3"
+
+services:
+  valkey:
+    image: valkey/valkey:7.2
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey-data:/data
+
+  postgres:
+    image: postgres:16.2-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  valkey-data:
+    driver: local
+  db-data:
+    driver: local

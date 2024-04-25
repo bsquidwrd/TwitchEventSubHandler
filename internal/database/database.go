@@ -1,13 +1,15 @@
 package database
 
 type Service struct {
-	Redis  *redisService
-	Twitch *twitchService
+	Cache    *cacheService
+	Database *databaseService
+	Twitch   *twitchService
 }
 
 func New() *Service {
 	return &Service{
-		Redis:  newRedisService(),
-		Twitch: newTwitchService(),
+		Cache:    newCacheService(),
+		Database: newDatabaseService(),
+		Twitch:   newTwitchService(),
 	}
 }
