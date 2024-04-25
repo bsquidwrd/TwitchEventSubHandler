@@ -7,11 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type databaseService struct {
-	db *pgxpool.Pool
-}
-
-func newDatabaseService() *databaseService {
+func newDatabaseService() *pgxpool.Pool {
 	poolConfig, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
 	if err != nil {
 		panic(err)
@@ -27,7 +23,5 @@ func newDatabaseService() *databaseService {
 		panic(err)
 	}
 
-	return &databaseService{
-		db: db,
-	}
+	return db
 }

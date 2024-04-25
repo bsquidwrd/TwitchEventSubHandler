@@ -1,6 +1,7 @@
 package twitch
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -26,8 +27,6 @@ type clientCredentials struct {
 	TokenType   string `json:"token_type"`
 }
 
-func fakeDBCall() (string, error) { return "", nil }
-
 func getAuthKey(dbServices *database.Service) string {
 	cachedKey := "twitch:api:authkey"
 	existingAuthKey := dbServices.Cache.GetString(cachedKey)
@@ -36,10 +35,12 @@ func getAuthKey(dbServices *database.Service) string {
 		return existingAuthKey
 	}
 
-	dbKey, err := fakeDBCall()
-	if err != nil {
-		slog.Error("Error getting Auth key from DB", err)
-	}
+	dbAuthData := dbServices.Database.QueryRow(
+		context.Background(),
+		"select access_token from public.twitch_auth where expired is not true and expires_at >= current_timestamp order by expires_at desc limit 1",
+	)
+	var dbKey string
+	dbAuthData.Scan(&dbKey)
 	if dbKey != "" {
 		dbServices.Cache.SetString(cachedKey, dbKey, 5*time.Minute)
 		return dbKey
@@ -54,7 +55,28 @@ func getAuthKey(dbServices *database.Service) string {
 		if newAuthKey.ExpiresIn > 0 {
 			expirationDuration := time.Duration(newAuthKey.ExpiresIn) * time.Second
 			dbServices.Cache.SetString(cachedKey, newAuthKey.AccessToken, expirationDuration)
-			// set value in db too
+
+			_, err := dbServices.Database.Exec(
+				context.Background(),
+				"update public.twitch_auth set expired = true where expired is not true",
+			)
+			if err != nil {
+				slog.Error("Error invalidating old access tokens in db", "error", err)
+			}
+
+			_, err = dbServices.Database.Exec(
+				context.Background(),
+				`INSERT INTO public.twitch_auth
+				(client_id, access_token, expires_at)
+				VALUES($1, $2, $3);`,
+				clientID,
+				newAuthKey.AccessToken,
+				time.Now().UTC().Add(expirationDuration),
+			)
+			if err != nil {
+				slog.Error("Error inserting new access token into db", "error", err)
+			}
+
 			return newAuthKey.AccessToken
 		}
 	} else {

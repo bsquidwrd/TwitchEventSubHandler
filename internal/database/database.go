@@ -1,8 +1,10 @@
 package database
 
+import "github.com/jackc/pgx/v5/pgxpool"
+
 type Service struct {
 	Cache    *cacheService
-	Database *databaseService
+	Database *pgxpool.Pool
 	Twitch   *twitchService
 }
 
