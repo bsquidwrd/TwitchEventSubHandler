@@ -6,6 +6,7 @@ type Service struct {
 	Cache    *cacheService
 	Database *pgxpool.Pool
 	Twitch   *twitchService
+	Queue    *queueService
 }
 
 func New() *Service {
@@ -13,5 +14,12 @@ func New() *Service {
 		Cache:    newCacheService(),
 		Database: newDatabaseService(),
 		Twitch:   newTwitchService(),
+		Queue:    newQueueService(),
 	}
+}
+
+func (s *Service) Cleanup() {
+	defer s.Cache.cleanup()
+	defer s.Database.Close()
+	defer s.Queue.cleanup()
 }

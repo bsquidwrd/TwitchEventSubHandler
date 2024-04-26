@@ -15,7 +15,7 @@ type cacheService struct {
 }
 
 func newCacheService() *cacheService {
-	cacheUrl := os.Getenv("CACHE_CONNECTIONSTRING")
+	cacheUrl := os.Getenv("CACHE_URL")
 	opt, err := redis.ParseURL(cacheUrl)
 	if err != nil {
 		panic(err)
@@ -31,6 +31,10 @@ func newCacheService() *cacheService {
 	return &cacheService{
 		db: client,
 	}
+}
+
+func (c *cacheService) cleanup() {
+	defer c.db.Close()
 }
 
 func (r *cacheService) TakeLock(key string, value string, expiration time.Duration) bool {
