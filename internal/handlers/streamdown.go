@@ -9,4 +9,5 @@ import (
 
 func processStreamDown(dbServices *database.Service, notification *models.StreamDownEventMessage) {
 	slog.Info("Channel went offline", "username", notification.Event.BroadcasterUserName)
+	defer dbServices.Queue.Publish("stream.offline", notification)
 }

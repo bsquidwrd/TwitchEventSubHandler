@@ -9,4 +9,5 @@ import (
 
 func processStreamUp(dbServices *database.Service, notification *models.StreamUpEventMessage) {
 	slog.Info("Channel went live", "username", notification.Event.BroadcasterUserName)
+	defer dbServices.Queue.Publish("stream.online", notification)
 }

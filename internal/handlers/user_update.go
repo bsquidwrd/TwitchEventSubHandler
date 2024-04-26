@@ -9,4 +9,5 @@ import (
 
 func processUserUpdate(dbServices *database.Service, notification *models.UserUpdateEventMessage) {
 	slog.Info("User was updated", "username", notification.Event.UserName)
+	defer dbServices.Queue.Publish("user.update", notification)
 }

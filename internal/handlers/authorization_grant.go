@@ -13,6 +13,7 @@ import (
 
 func processAuthorizationGrant(dbServices *database.Service, notification *models.AuthorizationGrantEventMessage) {
 	slog.Info("User granted authorization", "userid", notification.Event.UserID)
+	defer dbServices.Queue.Publish("user.authorization.grant", notification)
 
 	eventsubSecret := os.Getenv("EVENTSUBSECRET")
 	eventsubWebhook := os.Getenv("EVENTSUBWEBHOOK")

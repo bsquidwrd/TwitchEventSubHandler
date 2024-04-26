@@ -9,4 +9,5 @@ import (
 
 func processChannelUpdate(dbServices *database.Service, notification *models.ChannelUpdateEventMessage) {
 	slog.Info("Channel was updated", "username", notification.Event.BroadcasterUserName)
+	defer dbServices.Queue.Publish("channel.update", notification)
 }
