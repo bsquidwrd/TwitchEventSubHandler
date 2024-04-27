@@ -49,7 +49,7 @@ func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http
 		// If a message is older than 10 minutes, don't do anything with it
 		if time.Now().UTC().Sub(parsedTimestamp).Minutes() >= 10 {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, "A bit stale, but thanks")
+			fmt.Fprintf(w, "This is as outdated as flip phones.")
 			return
 		}
 
