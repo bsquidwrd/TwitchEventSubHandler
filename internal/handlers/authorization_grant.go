@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -73,4 +74,15 @@ func processAuthorizationGrant(dbServices *database.Service, notification *model
 		body := string(bodyBytes)
 		go twitch.CallApi(dbServices, http.MethodPost, "eventsub/subscriptions", body, nil)
 	}
+
+	go dbServices.Database.Exec(context.Background(), `
+		insert into public.twitch_user (id,"name",login)
+		values($1,$2,$3)
+		on conflict (id) do update
+		set "name"=$2,login=$3;
+		`,
+		notification.Event.UserID,
+		notification.Event.UserName,
+		notification.Event.UserLogin,
+	)
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -32,4 +33,10 @@ func processAuthorizationRevoke(dbServices *database.Service, notification *mode
 		}
 		go twitch.DeleteSubscription(dbServices, subscription.ID)
 	}
+
+	go dbServices.Database.Exec(context.Background(), `
+		delete from public.twitch_user where id=$1;
+		`,
+		notification.Event.UserID,
+	)
 }
