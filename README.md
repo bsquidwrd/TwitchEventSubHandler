@@ -4,6 +4,13 @@
 This repository aims to represent how I will be handling EventSub notifications from Twitch
 
 
+## Setup Dev Environment
+
+- Rename `sample.env` to `.env` and edit values as needed
+- Run docker containers with `docker compose up`
+- Run the package with `go run main.go`
+
+
 ## [Goose Documentation](https://github.com/pressly/goose?tab=readme-ov-file#install)
 
 ```shell
