@@ -126,9 +126,6 @@ func generateNewAuthKey(dbServices *database.Service) (*clientCredentials, error
 
 func getNewAuthKey() (*clientCredentials, error) {
 	tokenUrl := "https://id.twitch.tv/oauth2/token"
-	if os.Getenv("API_URL") != "" {
-		tokenUrl = fmt.Sprintf("%s/auth/token", os.Getenv("API_URL"))
-	}
 
 	requestUrl, _ := url.ParseRequestURI(tokenUrl)
 	data := url.Values{}
@@ -177,9 +174,6 @@ func getNewAuthKey() (*clientCredentials, error) {
 
 func CallApi(dbServices *database.Service, method string, endpoint string, data string, parameters *url.Values) (int, []byte, error) {
 	baseUrl := "https://api.twitch.tv/helix/"
-	if os.Getenv("API_URL") != "" {
-		baseUrl = fmt.Sprintf("%s/mock/", os.Getenv("API_URL"))
-	}
 
 	requestUrl, _ := url.ParseRequestURI(baseUrl)
 	requestUrl.Path += endpoint
