@@ -110,7 +110,19 @@ func getNewAuthKey() (*clientCredentials, error) {
 	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	client := &http.Client{}
-	response, err := client.Do(request)
+	var response *http.Response
+
+	// Retry the request 3 times
+	for i := 0; i < 3; i++ {
+		err = nil
+		response, err = client.Do(request)
+		if err != nil {
+			time.After(1 * time.Second)
+			continue
+		} else {
+			break
+		}
+	}
 	if err != nil {
 		slog.Error("Error calling API", err)
 		return nil, err
@@ -176,6 +188,7 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 		err = nil
 		response, err = client.Do(request)
 		if err != nil {
+			time.After(1 * time.Second)
 			continue
 		} else {
 			break
