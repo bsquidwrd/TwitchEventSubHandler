@@ -29,7 +29,7 @@ func processChannelUpdate(dbServices *database.Service, notification *models.Cha
 		)
 
 		if err != nil {
-			slog.Warn("Error processing channel.update for DB call", "id", notification.BroadcasterUserID)
+			slog.Warn("Error processing channel.update for DB call", "userid", notification.BroadcasterUserID)
 		}
 	}()
 }

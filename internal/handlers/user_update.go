@@ -28,7 +28,7 @@ func processUserUpdate(dbServices *database.Service, notification *models.UserUp
 		)
 
 		if err != nil {
-			slog.Warn("Error processing user.update for DB call", "id", notification.UserID)
+			slog.Warn("Error processing user.update for DB call", "userid", notification.UserID)
 		}
 	}()
 }

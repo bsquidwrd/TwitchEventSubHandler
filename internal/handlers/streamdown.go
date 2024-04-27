@@ -28,7 +28,7 @@ func processStreamDown(dbServices *database.Service, notification *models.Stream
 		)
 
 		if err != nil {
-			slog.Warn("Error processing stream.offline for DB call", "id", notification.BroadcasterUserID)
+			slog.Warn("Error processing stream.offline for DB call", "userid", notification.BroadcasterUserID)
 		}
 	}()
 }

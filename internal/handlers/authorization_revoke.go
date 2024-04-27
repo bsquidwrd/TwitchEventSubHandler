@@ -42,7 +42,7 @@ func processAuthorizationRevoke(dbServices *database.Service, notification *mode
 		)
 
 		if err != nil {
-			slog.Warn("Error processing user.authorization.revoke for DB call", "id", notification.UserID)
+			slog.Warn("Error processing user.authorization.revoke for DB call", "userid", notification.UserID)
 		}
 	}()
 }

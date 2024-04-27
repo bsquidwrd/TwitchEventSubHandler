@@ -31,7 +31,7 @@ func processStreamUp(dbServices *database.Service, notification *models.StreamUp
 		)
 
 		if err != nil {
-			slog.Warn("Error processing stream.online for DB call", "id", notification.BroadcasterUserID)
+			slog.Warn("Error processing stream.online for DB call", "userid", notification.BroadcasterUserID)
 		}
 	}()
 }
