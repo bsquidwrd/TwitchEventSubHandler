@@ -18,12 +18,38 @@ type queueService struct {
 }
 
 func newQueueService() *queueService {
+	service := &queueService{}
+	service.connect()
+
+	// Handle disconnects and attempt to connect again
+	// unless the err is nil, indicating user shutdown/close
+	go func() {
+		for {
+			errChan := make(chan *amqp.Error)
+			service.ch.NotifyClose(errChan)
+			err := <-errChan
+
+			if err != nil {
+				service.connect()
+			} else {
+				break
+			}
+		}
+	}()
+
+	slog.Info("Queue connected successfully")
+
+	return service
+}
+
+func (q *queueService) connect() {
 	conn, err := amqp.Dial(os.Getenv("QUEUE_URL"))
 	if err != nil {
 		panic(err)
 	}
+	q.conn = conn
 
-	ch, err := conn.Channel()
+	ch, err := q.conn.Channel()
 	if err != nil {
 		panic(err)
 	}
@@ -41,12 +67,7 @@ func newQueueService() *queueService {
 	if err != nil {
 		panic(err)
 	}
-	slog.Info("Queue connected successfully")
-
-	return &queueService{
-		conn: conn,
-		ch:   ch,
-	}
+	q.ch = ch
 }
 
 func (q *queueService) cleanup() {
