@@ -34,9 +34,15 @@ func processAuthorizationRevoke(dbServices *database.Service, notification *mode
 		go twitch.DeleteSubscription(dbServices, subscription.ID)
 	}
 
-	go dbServices.Database.Exec(context.Background(), `
+	go func() {
+		_, err := dbServices.Database.Exec(context.Background(), `
 		delete from public.twitch_user where id=$1;
 		`,
-		notification.Event.UserID,
-	)
+			notification.Event.UserID,
+		)
+
+		if err != nil {
+			slog.Warn("Error processing user.authorization.revoke for DB call", "id", notification.Event.UserID)
+		}
+	}()
 }

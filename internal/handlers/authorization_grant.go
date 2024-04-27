@@ -75,14 +75,20 @@ func processAuthorizationGrant(dbServices *database.Service, notification *model
 		go twitch.CallApi(dbServices, http.MethodPost, "eventsub/subscriptions", body, nil)
 	}
 
-	go dbServices.Database.Exec(context.Background(), `
+	go func() {
+		_, err := dbServices.Database.Exec(context.Background(), `
 		insert into public.twitch_user (id,"name",login)
 		values($1,$2,$3)
 		on conflict (id) do update
 		set "name"=$2,login=$3;
 		`,
-		notification.Event.UserID,
-		notification.Event.UserName,
-		notification.Event.UserLogin,
-	)
+			notification.Event.UserID,
+			notification.Event.UserName,
+			notification.Event.UserLogin,
+		)
+
+		if err != nil {
+			slog.Warn("Error processing user.authorization.grant for DB call", "id", notification.Event.UserID)
+		}
+	}()
 }
