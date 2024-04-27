@@ -12,8 +12,8 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/twitch"
 )
 
-func processAuthorizationGrant(dbServices *database.Service, notification *models.AuthorizationGrantEventMessage) {
-	slog.Info("User granted authorization", "userid", notification.Event.UserID)
+func processAuthorizationGrant(dbServices *database.Service, notification *models.AuthorizationGrantEvent) {
+	slog.Info("User granted authorization", "userid", notification.UserID)
 	defer dbServices.Queue.Publish("user.authorization.grant", notification)
 
 	eventsubSecret := os.Getenv("EVENTSUBSECRET")
@@ -23,7 +23,7 @@ func processAuthorizationGrant(dbServices *database.Service, notification *model
 			Type:    "user.update",
 			Version: "1",
 			Condition: models.EventsubCondition{
-				UserID: notification.Event.UserID,
+				UserID: notification.UserID,
 			},
 			Transport: models.EventsubTransport{
 				Method:   "webhook",
@@ -35,7 +35,7 @@ func processAuthorizationGrant(dbServices *database.Service, notification *model
 			Type:    "channel.update",
 			Version: "2",
 			Condition: models.EventsubCondition{
-				BroadcasterUserID: notification.Event.UserID,
+				BroadcasterUserID: notification.UserID,
 			},
 			Transport: models.EventsubTransport{
 				Method:   "webhook",
@@ -47,7 +47,7 @@ func processAuthorizationGrant(dbServices *database.Service, notification *model
 			Type:    "stream.online",
 			Version: "1",
 			Condition: models.EventsubCondition{
-				BroadcasterUserID: notification.Event.UserID,
+				BroadcasterUserID: notification.UserID,
 			},
 			Transport: models.EventsubTransport{
 				Method:   "webhook",
@@ -59,7 +59,7 @@ func processAuthorizationGrant(dbServices *database.Service, notification *model
 			Type:    "stream.offline",
 			Version: "1",
 			Condition: models.EventsubCondition{
-				BroadcasterUserID: notification.Event.UserID,
+				BroadcasterUserID: notification.UserID,
 			},
 			Transport: models.EventsubTransport{
 				Method:   "webhook",
@@ -82,13 +82,13 @@ func processAuthorizationGrant(dbServices *database.Service, notification *model
 		on conflict (id) do update
 		set "name"=$2,login=$3;
 		`,
-			notification.Event.UserID,
-			notification.Event.UserName,
-			notification.Event.UserLogin,
+			notification.UserID,
+			notification.UserName,
+			notification.UserLogin,
 		)
 
 		if err != nil {
-			slog.Warn("Error processing user.authorization.grant for DB call", "id", notification.Event.UserID)
+			slog.Warn("Error processing user.authorization.grant for DB call", "id", notification.UserID)
 		}
 	}()
 }

@@ -13,12 +13,12 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/twitch"
 )
 
-func processAuthorizationRevoke(dbServices *database.Service, notification *models.AuthorizationRevokeEventMessage) {
-	slog.Info("User revoked authorization", "userid", notification.Event.UserID)
+func processAuthorizationRevoke(dbServices *database.Service, notification *models.AuthorizationRevokeEvent) {
+	slog.Info("User revoked authorization", "userid", notification.UserID)
 	defer dbServices.Queue.Publish("user.authorization.revoke", notification)
 
 	parameters := &url.Values{}
-	parameters.Add("user_id", notification.Event.UserID)
+	parameters.Add("user_id", notification.UserID)
 	_, rawBody, err := twitch.CallApi(dbServices, http.MethodGet, "eventsub/subscriptions", "", parameters)
 	if err != nil {
 		return
@@ -38,11 +38,11 @@ func processAuthorizationRevoke(dbServices *database.Service, notification *mode
 		_, err := dbServices.Database.Exec(context.Background(), `
 		delete from public.twitch_user where id=$1;
 		`,
-			notification.Event.UserID,
+			notification.UserID,
 		)
 
 		if err != nil {
-			slog.Warn("Error processing user.authorization.revoke for DB call", "id", notification.Event.UserID)
+			slog.Warn("Error processing user.authorization.revoke for DB call", "id", notification.UserID)
 		}
 	}()
 }

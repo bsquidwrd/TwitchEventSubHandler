@@ -8,8 +8,8 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func processChannelUpdate(dbServices *database.Service, notification *models.ChannelUpdateEventMessage) {
-	slog.Info("Channel was updated", "username", notification.Event.BroadcasterUserName)
+func processChannelUpdate(dbServices *database.Service, notification *models.ChannelUpdateEventSubEvent) {
+	slog.Info("Channel was updated", "userid", notification.BroadcasterUserID)
 	defer dbServices.Queue.Publish("channel.update", notification)
 
 	go func() {
@@ -19,17 +19,17 @@ func processChannelUpdate(dbServices *database.Service, notification *models.Cha
 		on conflict (id) do update
 		set "name"=$2,login=$3,title=$4,"language"=$5,category_id=$6,category_name=$7;
 		`,
-			notification.Event.BroadcasterUserID,
-			notification.Event.BroadcasterUserName,
-			notification.Event.BroadcasterUserLogin,
-			notification.Event.StreamTitle,
-			notification.Event.StreamLanguage,
-			notification.Event.StreamCategoryID,
-			notification.Event.StreamCategoryName,
+			notification.BroadcasterUserID,
+			notification.BroadcasterUserName,
+			notification.BroadcasterUserLogin,
+			notification.StreamTitle,
+			notification.StreamLanguage,
+			notification.StreamCategoryID,
+			notification.StreamCategoryName,
 		)
 
 		if err != nil {
-			slog.Warn("Error processing channel.update for DB call", "id", notification.Event.BroadcasterUserID)
+			slog.Warn("Error processing channel.update for DB call", "id", notification.BroadcasterUserID)
 		}
 	}()
 }

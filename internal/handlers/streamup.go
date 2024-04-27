@@ -8,10 +8,10 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func processStreamUp(dbServices *database.Service, notification *models.StreamUpEventMessage) {
-	slog.Info("Channel went live", "username", notification.Event.BroadcasterUserName)
+func processStreamUp(dbServices *database.Service, notification *models.StreamUpEventSubEvent) {
+	slog.Info("Channel went live", "userid", notification.BroadcasterUserID)
 
-	if notification.Event.Type != "live" {
+	if notification.Type != "live" {
 		return
 	}
 	defer dbServices.Queue.Publish("stream.online", notification)
@@ -23,15 +23,15 @@ func processStreamUp(dbServices *database.Service, notification *models.StreamUp
 		on conflict (id) do update
 		set "name"=$2,login=$3,last_online_at=$4,live=$5;
 		`,
-			notification.Event.BroadcasterUserID,
-			notification.Event.BroadcasterUserName,
-			notification.Event.BroadcasterUserLogin,
-			notification.Event.StartedAt,
+			notification.BroadcasterUserID,
+			notification.BroadcasterUserName,
+			notification.BroadcasterUserLogin,
+			notification.StartedAt,
 			true,
 		)
 
 		if err != nil {
-			slog.Warn("Error processing stream.online for DB call", "id", notification.Event.BroadcasterUserID)
+			slog.Warn("Error processing stream.online for DB call", "id", notification.BroadcasterUserID)
 		}
 	}()
 }

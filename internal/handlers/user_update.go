@@ -8,8 +8,8 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func processUserUpdate(dbServices *database.Service, notification *models.UserUpdateEventMessage) {
-	slog.Info("User was updated", "username", notification.Event.UserName)
+func processUserUpdate(dbServices *database.Service, notification *models.UserUpdateEventSubEvent) {
+	slog.Info("User was updated", "userid", notification.UserID)
 	defer dbServices.Queue.Publish("user.update", notification)
 
 	go func() {
@@ -19,16 +19,16 @@ func processUserUpdate(dbServices *database.Service, notification *models.UserUp
 		on conflict (id) do update
 		set "name"=$2,login=$3,email=$4,email_verified=$5,description=$6;
 		`,
-			notification.Event.UserID,
-			notification.Event.UserName,
-			notification.Event.UserLogin,
-			notification.Event.Email,
-			notification.Event.EmailVerified,
-			notification.Event.Description,
+			notification.UserID,
+			notification.UserName,
+			notification.UserLogin,
+			notification.Email,
+			notification.EmailVerified,
+			notification.Description,
 		)
 
 		if err != nil {
-			slog.Warn("Error processing user.update for DB call", "id", notification.Event.UserID)
+			slog.Warn("Error processing user.update for DB call", "id", notification.UserID)
 		}
 	}()
 }

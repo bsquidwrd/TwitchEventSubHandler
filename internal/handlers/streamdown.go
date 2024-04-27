@@ -9,8 +9,8 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 )
 
-func processStreamDown(dbServices *database.Service, notification *models.StreamDownEventMessage) {
-	slog.Info("Channel went offline", "username", notification.Event.BroadcasterUserName)
+func processStreamDown(dbServices *database.Service, notification *models.StreamDownEventSubEvent) {
+	slog.Info("Channel went offline", "userid", notification.BroadcasterUserID)
 	defer dbServices.Queue.Publish("stream.offline", notification)
 
 	go func() {
@@ -20,15 +20,15 @@ func processStreamDown(dbServices *database.Service, notification *models.Stream
 		on conflict (id) do update
 		set "name"=$2,login=$3,live=$4,last_offline_at=$5;
 		`,
-			notification.Event.BroadcasterUserID,
-			notification.Event.BroadcasterUserName,
-			notification.Event.BroadcasterUserLogin,
+			notification.BroadcasterUserID,
+			notification.BroadcasterUserName,
+			notification.BroadcasterUserLogin,
 			false,
 			time.Now().UTC(),
 		)
 
 		if err != nil {
-			slog.Warn("Error processing stream.offline for DB call", "id", notification.Event.BroadcasterUserID)
+			slog.Warn("Error processing stream.offline for DB call", "id", notification.BroadcasterUserID)
 		}
 	}()
 }
