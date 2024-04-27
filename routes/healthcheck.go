@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -10,7 +9,7 @@ import (
 
 func HandleHealthCheck(dbServices *database.Service) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := dbServices.Database.Ping(context.Background())
+		err := dbServices.HealthCheck()
 		if err != nil {
 			http.Error(w, "ERROR", http.StatusInternalServerError)
 			return

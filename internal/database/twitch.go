@@ -13,3 +13,7 @@ func newTwitchService() *twitchService {
 		RatelimitLock: &sync.Mutex{},
 	}
 }
+
+func (t *twitchService) Ping() error {
+	return nil
+}

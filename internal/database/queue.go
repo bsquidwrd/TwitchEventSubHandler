@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"os"
 	"time"
@@ -73,6 +74,13 @@ func (q *queueService) connect() {
 func (q *queueService) cleanup() {
 	defer q.conn.Close()
 	defer q.ch.Close()
+}
+
+func (q *queueService) Ping() error {
+	if q.ch.IsClosed() {
+		return errors.New("queue is closed")
+	}
+	return nil
 }
 
 func (q *queueService) Publish(topic string, body interface{}) error {
