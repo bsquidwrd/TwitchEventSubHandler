@@ -5,8 +5,6 @@ services:
   valkey:
     image: valkey/valkey:7.2
     restart: always
-    ports:
-      - "6379:6379"
     volumes:
       - valkey-data:/data
     networks:
@@ -15,8 +13,6 @@ services:
   postgres:
     image: postgres:16.2-alpine
     restart: always
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: password
@@ -24,13 +20,12 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - backend
-  
+
   rabbitmq:
     image: rabbitmq:3.13-management
     hostname: rabbitmq
     restart: always
     ports:
-      - "5672:5672"
       - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=guest
@@ -46,7 +41,7 @@ services:
       timeout: 30s
       retries: 5
       start_period: 5s
-  
+
   webhook_handler:
     build: .
     restart: always
