@@ -12,4 +12,5 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/bin/runner /go/bin/runner
 COPY --from=builder /go/bin/healthcheck /go/bin/healthcheck
 
-ENTRYPOINT ["/go/bin/runner"]
+CMD ["/go/bin/runner"]
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "/go/bin/healthcheck" ]
