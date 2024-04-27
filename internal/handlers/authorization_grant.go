@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"fmt"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"os"
@@ -17,14 +17,60 @@ func processAuthorizationGrant(dbServices *database.Service, notification *model
 
 	eventsubSecret := os.Getenv("EVENTSUBSECRET")
 	eventsubWebhook := os.Getenv("EVENTSUBWEBHOOK")
-	bodies := []string{
-		fmt.Sprintf(`{"type":"user.update","version":"1","condition":{"user_id":"%s"},"transport":{"method":"webhook","callback":"%s","secret":"%s"}}`, notification.Event.UserID, eventsubWebhook, eventsubSecret),
-		fmt.Sprintf(`{"type":"channel.update","version":"2","condition":{"broadcaster_user_id":"%s"},"transport":{"method":"webhook","callback":"%s","secret":"%s"}}`, notification.Event.UserID, eventsubWebhook, eventsubSecret),
-		fmt.Sprintf(`{"type":"stream.online","version":"1","condition":{"broadcaster_user_id":"%s"},"transport":{"method":"webhook","callback":"%s","secret":"%s"}}`, notification.Event.UserID, eventsubWebhook, eventsubSecret),
-		fmt.Sprintf(`{"type":"stream.offline","version":"1","condition":{"broadcaster_user_id":"%s"},"transport":{"method":"webhook","callback":"%s","secret":"%s"}}`, notification.Event.UserID, eventsubWebhook, eventsubSecret),
+	subscriptions := []models.EventsubSubscription{
+		{
+			Type:    "user.update",
+			Version: "1",
+			Condition: models.EventsubCondition{
+				UserID: notification.Event.UserID,
+			},
+			Transport: models.EventsubTransport{
+				Method:   "webhook",
+				Callback: eventsubWebhook,
+				Secret:   eventsubSecret,
+			},
+		},
+		{
+			Type:    "channel.update",
+			Version: "2",
+			Condition: models.EventsubCondition{
+				BroadcasterUserID: notification.Event.UserID,
+			},
+			Transport: models.EventsubTransport{
+				Method:   "webhook",
+				Callback: eventsubWebhook,
+				Secret:   eventsubSecret,
+			},
+		},
+		{
+			Type:    "stream.online",
+			Version: "1",
+			Condition: models.EventsubCondition{
+				BroadcasterUserID: notification.Event.UserID,
+			},
+			Transport: models.EventsubTransport{
+				Method:   "webhook",
+				Callback: eventsubWebhook,
+				Secret:   eventsubSecret,
+			},
+		},
+		{
+			Type:    "stream.offline",
+			Version: "1",
+			Condition: models.EventsubCondition{
+				BroadcasterUserID: notification.Event.UserID,
+			},
+			Transport: models.EventsubTransport{
+				Method:   "webhook",
+				Callback: eventsubWebhook,
+				Secret:   eventsubSecret,
+			},
+		},
 	}
 
-	for _, body := range bodies {
+	for _, subscription := range subscriptions {
+		bodyBytes, _ := json.Marshal(subscription)
+		body := string(bodyBytes)
 		go twitch.CallApi(dbServices, http.MethodPost, "eventsub/subscriptions", body, nil)
 	}
 }

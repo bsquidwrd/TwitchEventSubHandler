@@ -3,20 +3,21 @@
 package models
 
 type EventsubSubscription struct {
-	ID        string            `json:"id"`
-	Status    string            `json:"status"`
+	ID        string            `json:"id,omitempty"`
+	Status    string            `json:"status,omitempty"`
 	Type      string            `json:"type"`
 	Version   string            `json:"version"`
 	Condition EventsubCondition `json:"condition"`
 	Transport EventsubTransport `json:"transport"`
-	CreatedAt string            `json:"created_at"`
-	Cost      int64             `json:"cost"`
+	CreatedAt string            `json:"created_at,omitempty"`
+	Cost      int64             `json:"cost,omitempty"`
 }
 
 type EventsubTransport struct {
 	Method    string `json:"method"`
 	Callback  string `json:"callback,omitempty"`
 	SessionID string `json:"session_id,omitempty"`
+	Secret    string `json:"secret,omitempty"`
 }
 
 type EventsubCondition struct {
