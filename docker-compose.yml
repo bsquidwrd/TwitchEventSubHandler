@@ -9,6 +9,8 @@ services:
       - "6379:6379"
     volumes:
       - valkey-data:/data
+    networks:
+      - backend
 
   postgres:
     image: postgres:16.2-alpine
@@ -20,6 +22,8 @@ services:
       POSTGRES_PASSWORD: password
     volumes:
       - db-data:/var/lib/postgresql/data
+    networks:
+      - backend
   
   rabbitmq:
     image: rabbitmq:3.13-management
@@ -33,6 +37,36 @@ services:
       - RABBITMQ_DEFAULT_PASS=guest
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - backend
+      - frontend
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics check_port_connectivity || exit 1"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
+      start_period: 5s
+  
+  webhook_handler:
+    build: .
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      valkey:
+        condition: service_started
+        restart: true
+      postgres:
+        condition: service_started
+        restart: true
+      rabbitmq:
+        condition: service_healthy
+        restart: true
+    networks:
+      - backend
+      - frontend
 
 volumes:
   valkey-data:
@@ -41,3 +75,8 @@ volumes:
     driver: local
   rabbitmq-data:
     driver: local
+
+networks:
+  backend:
+  frontend:
+    driver: bridge
