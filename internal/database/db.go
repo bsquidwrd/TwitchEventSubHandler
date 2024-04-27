@@ -33,7 +33,6 @@ func newDatabaseService() *pgxpool.Pool {
 	slog.Info("Database connected successfully")
 
 	goose.SetBaseFS(embedMigrations)
-
 	if err := goose.SetDialect("postgres"); err != nil {
 		panic(err)
 	}

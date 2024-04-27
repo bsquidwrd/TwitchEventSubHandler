@@ -44,10 +44,14 @@ func checkForLock(mu *sync.Mutex) {
 }
 
 func getAuthKey(dbServices *database.Service) string {
-	existingAuthKey := dbServices.Cache.GetString(authCacheKey)
+	if dbServices.Twitch.AccessToken != "" {
+		return dbServices.Twitch.AccessToken
+	}
 
-	if existingAuthKey != "" {
-		return existingAuthKey
+	cachedAuthKey := dbServices.Cache.GetString(authCacheKey)
+	if cachedAuthKey != "" {
+		dbServices.Twitch.AccessToken = cachedAuthKey
+		return cachedAuthKey
 	}
 
 	dbAuthData := dbServices.Database.QueryRow(
@@ -57,6 +61,7 @@ func getAuthKey(dbServices *database.Service) string {
 	var dbKey string
 	dbAuthData.Scan(&dbKey)
 	if dbKey != "" {
+		dbServices.Twitch.AccessToken = dbKey
 		dbServices.Cache.SetString(authCacheKey, dbKey, 5*time.Minute)
 		return dbKey
 	}
@@ -85,6 +90,8 @@ func generateNewAuthKey(dbServices *database.Service) (*clientCredentials, error
 		return nil, err
 	}
 	if newAuthKey.ExpiresIn > 0 {
+		dbServices.Twitch.AccessToken = newAuthKey.AccessToken
+
 		expirationDuration := time.Duration(newAuthKey.ExpiresIn) * time.Second
 		dbServices.Cache.SetString(authCacheKey, newAuthKey.AccessToken, expirationDuration)
 
@@ -98,10 +105,11 @@ func generateNewAuthKey(dbServices *database.Service) (*clientCredentials, error
 		}
 
 		_, err = dbServices.Database.Exec(
-			context.Background(),
-			`INSERT INTO public.twitch_auth
-		(client_id, access_token, expires_at)
-		VALUES($1, $2, $3);`,
+			context.Background(), `
+				insert into public.twitch_auth
+				(client_id, access_token, expires_at)
+				VALUES($1, $2, $3);
+			`,
 			clientID,
 			newAuthKey.AccessToken,
 			time.Now().UTC().Add(expirationDuration),
