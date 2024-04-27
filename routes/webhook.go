@@ -39,12 +39,6 @@ func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http
 		messageTimestamp := r.Header.Get("Twitch-Eventsub-Message-Timestamp")
 		messageType := r.Header.Get("Twitch-Eventsub-Message-Type")
 
-		if !utils.ValidateSignature([]byte(secret), messageID, messageTimestamp, rawBody, messageSignature) {
-			slog.Warn("Invalid request received", "endpoint", html.EscapeString(r.URL.Path))
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
 		parsedTimestamp, err := time.Parse(time.RFC3339, messageTimestamp)
 		if err != nil {
 			slog.Warn("Invalid Message Timestamp detected", "timestamp", messageTimestamp, "error", err)
@@ -56,6 +50,21 @@ func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http
 		if time.Now().UTC().Sub(parsedTimestamp).Minutes() >= 10 {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintf(w, "A bit stale, but thanks")
+			return
+		}
+
+		// Ensure we haven't processed this message id already
+		if dbServices.Cache.GetBool(fmt.Sprintf("twitch:message:%s", messageID)) {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, "I've seen this so much, it's starting to feel like deja-vu-vu.")
+			return
+		} else {
+			dbServices.Cache.SetBool(fmt.Sprintf("twitch:message:%s", messageID), true, 10*time.Minute)
+		}
+
+		if !utils.ValidateSignature([]byte(secret), messageID, messageTimestamp, rawBody, messageSignature) {
+			slog.Warn("Invalid request received", "endpoint", html.EscapeString(r.URL.Path))
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
