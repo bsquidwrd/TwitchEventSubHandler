@@ -3,6 +3,7 @@ package twitch
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -11,6 +12,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
@@ -21,15 +23,28 @@ var (
 	clientSecret = os.Getenv("CLIENTSECRET")
 )
 
+const authCacheKey = "twitch:api:authkey"
+
 type clientCredentials struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int64  `json:"expires_in"`
 	TokenType   string `json:"token_type"`
 }
 
+func checkForLock(mu *sync.Mutex) {
+	// Make sure there's no existing lock in place
+	if mu.TryLock() {
+		mu.Unlock()
+	} else {
+		// If we couldn't get a lock on it, wait until we can
+		// Not being able to get a lock means to wait
+		mu.Lock()
+		mu.Unlock()
+	}
+}
+
 func getAuthKey(dbServices *database.Service) string {
-	cachedKey := "twitch:api:authkey"
-	existingAuthKey := dbServices.Cache.GetString(cachedKey)
+	existingAuthKey := dbServices.Cache.GetString(authCacheKey)
 
 	if existingAuthKey != "" {
 		return existingAuthKey
@@ -42,43 +57,17 @@ func getAuthKey(dbServices *database.Service) string {
 	var dbKey string
 	dbAuthData.Scan(&dbKey)
 	if dbKey != "" {
-		dbServices.Cache.SetString(cachedKey, dbKey, 5*time.Minute)
+		dbServices.Cache.SetString(authCacheKey, dbKey, 5*time.Minute)
 		return dbKey
 	}
 
 	if dbServices.Twitch.AuthLock.TryLock() {
 		defer dbServices.Twitch.AuthLock.Unlock()
-		newAuthKey, err := getNewAuthKey()
+		newAuthKey, err := generateNewAuthKey(dbServices)
 		if err != nil {
-			slog.Error("Error getting new Auth Key", err)
+			return ""
 		}
-		if newAuthKey.ExpiresIn > 0 {
-			expirationDuration := time.Duration(newAuthKey.ExpiresIn) * time.Second
-			dbServices.Cache.SetString(cachedKey, newAuthKey.AccessToken, expirationDuration)
-
-			_, err := dbServices.Database.Exec(
-				context.Background(),
-				"update public.twitch_auth set expired = true where expired is not true",
-			)
-			if err != nil {
-				slog.Error("Error invalidating old access tokens in db", "error", err)
-			}
-
-			_, err = dbServices.Database.Exec(
-				context.Background(),
-				`INSERT INTO public.twitch_auth
-				(client_id, access_token, expires_at)
-				VALUES($1, $2, $3);`,
-				clientID,
-				newAuthKey.AccessToken,
-				time.Now().UTC().Add(expirationDuration),
-			)
-			if err != nil {
-				slog.Error("Error inserting new access token into db", "error", err)
-			}
-
-			return newAuthKey.AccessToken
-		}
+		return newAuthKey.AccessToken
 	} else {
 		// If we couldn't get a lock on it, wait until we can
 		// Not being able to get a lock means someone else is refreshing the auth key
@@ -86,8 +75,45 @@ func getAuthKey(dbServices *database.Service) string {
 		dbServices.Twitch.AuthLock.Unlock()
 		return getAuthKey(dbServices)
 	}
+}
 
-	return ""
+// Generates and stores new auth key in all the necessary places
+func generateNewAuthKey(dbServices *database.Service) (*clientCredentials, error) {
+	newAuthKey, err := getNewAuthKey()
+	if err != nil {
+		slog.Error("Error getting new Auth Key", err)
+		return nil, err
+	}
+	if newAuthKey.ExpiresIn > 0 {
+		expirationDuration := time.Duration(newAuthKey.ExpiresIn) * time.Second
+		dbServices.Cache.SetString(authCacheKey, newAuthKey.AccessToken, expirationDuration)
+
+		_, err := dbServices.Database.Exec(
+			context.Background(),
+			"update public.twitch_auth set expired = true where expired is not true",
+		)
+		if err != nil {
+			slog.Error("Error invalidating old access tokens in db", "error", err)
+			return nil, err
+		}
+
+		_, err = dbServices.Database.Exec(
+			context.Background(),
+			`INSERT INTO public.twitch_auth
+		(client_id, access_token, expires_at)
+		VALUES($1, $2, $3);`,
+			clientID,
+			newAuthKey.AccessToken,
+			time.Now().UTC().Add(expirationDuration),
+		)
+		if err != nil {
+			slog.Error("Error inserting new access token into db", "error", err)
+			return nil, err
+		}
+
+		return newAuthKey, nil
+	}
+	return nil, errors.New("unable to generate new auth key")
 }
 
 func getNewAuthKey() (*clientCredentials, error) {
@@ -159,6 +185,12 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 		method = http.MethodGet
 	}
 
+	// Make sure there's no existing rate limit in place
+	checkForLock(dbServices.Twitch.RatelimitLock)
+
+	// Make sure there's no existing auth lock in place
+	checkForLock(dbServices.Twitch.AuthLock)
+
 	request, err := http.NewRequest(method, requestUrl.String(), strings.NewReader(data))
 	request.Header.Add("Accept", "application/json")
 	request.Header.Add("Content-Type", "application/json")
@@ -168,16 +200,6 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 	if err != nil {
 		slog.Error("Error assembling API request", err)
 		return 0, nil, err
-	}
-
-	// Make sure there's no existing rate limit in place
-	if dbServices.Twitch.RatelimitLock.TryLock() {
-		dbServices.Twitch.RatelimitLock.Unlock()
-	} else {
-		// If we couldn't get a lock on it, wait until we can
-		// Not being able to get a lock means a rate limit is in effect
-		dbServices.Twitch.AuthLock.Lock()
-		dbServices.Twitch.AuthLock.Unlock()
 	}
 
 	client := &http.Client{}
@@ -207,9 +229,20 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 		}
 		slog.Info("Twitch API rate limit hit, waiting it out", "reset", ratelimitResetValue)
 		ratelimitReset := time.Unix(ratelimitResetValue, 0)
+
 		dbServices.Twitch.RatelimitLock.Lock()
 		time.After(ratelimitReset.Sub(time.Now().UTC()))
 		dbServices.Twitch.RatelimitLock.Unlock()
+
+		return CallApi(dbServices, method, endpoint, data, parameters)
+	} else if response.StatusCode == http.StatusUnauthorized {
+		dbServices.Twitch.AuthLock.Lock()
+		_, err := generateNewAuthKey(dbServices)
+		if err != nil {
+			return 0, nil, err
+		}
+		dbServices.Twitch.AuthLock.Unlock()
+
 		return CallApi(dbServices, method, endpoint, data, parameters)
 	} else {
 		rawBody, err := io.ReadAll(response.Body)
