@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"os"
 	"time"
 
@@ -40,6 +41,7 @@ func newQueueService() *queueService {
 	if err != nil {
 		panic(err)
 	}
+	slog.Info("Queue connected successfully")
 
 	return &queueService{
 		conn: conn,

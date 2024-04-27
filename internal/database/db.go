@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"log/slog"
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -22,6 +23,7 @@ func newDatabaseService() *pgxpool.Pool {
 	if err != nil {
 		panic(err)
 	}
+	slog.Info("Database connected successfully")
 
 	return db
 }
