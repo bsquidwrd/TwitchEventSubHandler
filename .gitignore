@@ -24,6 +24,7 @@ __debug_bin
 # Go workspace file
 go.work
 
+*.code-workspace
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
