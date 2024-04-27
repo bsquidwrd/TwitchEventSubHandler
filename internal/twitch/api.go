@@ -169,7 +169,18 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 	}
 
 	client := &http.Client{}
-	response, err := client.Do(request)
+	var response *http.Response
+
+	// Retry the request 3 times
+	for i := 0; i < 3; i++ {
+		err = nil
+		response, err = client.Do(request)
+		if err != nil {
+			continue
+		} else {
+			break
+		}
+	}
 	if err != nil {
 		slog.Error("Error calling API", err)
 		return 0, nil, err
