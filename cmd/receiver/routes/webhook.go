@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
-	"github.com/bsquidwrd/TwitchEventSubHandler/internal/handlers"
+	"github.com/bsquidwrd/TwitchEventSubHandler/internal/receiver_handlers"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/twitch"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/utils"
 	"github.com/bsquidwrd/TwitchEventSubHandler/pkg/models"
@@ -105,7 +105,7 @@ func HandleWebhook(dbServices *database.ReceiverService) func(http.ResponseWrite
 			w.WriteHeader(http.StatusAccepted)
 			fmt.Fprint(w, "Oh that's lit!")
 
-			go handlers.HandleNotification(dbServices, r.Header.Get("Twitch-Eventsub-Subscription-Type"), &rawBody)
+			go receiver_handlers.HandleNotification(dbServices, r.Header.Get("Twitch-Eventsub-Subscription-Type"), &rawBody)
 
 		default:
 			w.WriteHeader(http.StatusForbidden)
