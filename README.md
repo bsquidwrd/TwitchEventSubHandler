@@ -3,6 +3,7 @@
 
 This repository aims to represent how I will be handling EventSub notifications from Twitch
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/bsquidwrd/TwitchEventSubHandler)](https://goreportcard.com/report/github.com/bsquidwrd/TwitchEventSubHandler)
 
 ## Setup Dev Environment
 
