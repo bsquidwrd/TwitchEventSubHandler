@@ -23,7 +23,7 @@ func main() {
 		port = "8080"
 	}
 
-	dbServices := database.New()
+	dbServices := database.NewReceiverService()
 	defer dbServices.Cleanup()
 
 	http.HandleFunc("/", routes.HandleRoot)

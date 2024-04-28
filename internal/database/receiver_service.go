@@ -14,7 +14,7 @@ type ReceiverService struct {
 	Queue    *queueService
 }
 
-func New() *ReceiverService {
+func NewReceiverService() *ReceiverService {
 	return &ReceiverService{
 		Cache:    newCacheService(),
 		Database: newDatabaseService(),
