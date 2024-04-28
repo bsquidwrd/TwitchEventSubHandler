@@ -112,6 +112,7 @@ func testFunc(dbServices *database.DiscordNotifierService, msg amqp.Delivery) {
 	err := dbUser.Scan(&user.Id, &user.Name, &user.Login, &user.Description, &user.Title, &user.Language, &user.CategoryID, &user.CategoryName, &user.LastOnlineAt, &user.LastOfflineAt, &user.Live)
 	if err != nil {
 		slog.Warn("Could not retrieve user from database", err)
+		return
 	}
 
 	slog.Info("Got user info!", user)
