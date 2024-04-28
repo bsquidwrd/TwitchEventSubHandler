@@ -18,6 +18,8 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
+	slog.Info("Receiver Starting Up...")
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

@@ -109,3 +109,57 @@ func (q *queueService) Publish(topic string, body interface{}) error {
 
 	return nil
 }
+
+func (q *queueService) StartConsuming(queueName string, topics []string, callback func(amqp.Delivery)) {
+	queue, err := q.ch.QueueDeclare(
+		queueName, // name
+		true,      // durable
+		false,     // delete when unused
+		false,     // exclusive
+		false,     // no-wait
+		nil,       // arguments
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, topic := range topics {
+		err = q.ch.QueueBind(
+			queue.Name,   // queue name
+			topic,        // routing key
+			exchangeName, // exchange
+			false,        // no wait
+			nil,          // args
+		)
+		if err != nil {
+			panic(err)
+		}
+
+		msgs, err := q.ch.Consume(
+			queue.Name, // queue
+			"",         // consumer
+			true,       // auto ack
+			false,      // exclusive
+			false,      // no local
+			false,      // no wait
+			nil,        // args
+		)
+		if err != nil {
+			panic(err)
+		}
+
+		go func() {
+			for msg := range msgs {
+				m := msg
+				go func() {
+					startTime := time.Now().UTC()
+					callback(m)
+					endTime := time.Now().UTC()
+					slog.Info(" [x] Processed message", "topic", m.RoutingKey, "millisecondstoprocess", endTime.Sub(startTime).Milliseconds())
+				}()
+			}
+		}()
+	}
+
+	slog.Info("Successfully started consuming from queue", "queuename", queue.Name)
+}

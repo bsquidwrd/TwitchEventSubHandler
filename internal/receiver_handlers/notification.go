@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
-	"github.com/bsquidwrd/TwitchEventSubHandler/pkg/models"
+	models "github.com/bsquidwrd/TwitchEventSubHandler/pkg/models/twitch"
 )
 
 func HandleNotification(dbServices *database.ReceiverService, notificationType string, rawBody *[]byte) {

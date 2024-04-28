@@ -15,6 +15,21 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
+		},
+		{
+			"label": "go: build discord_notifier (debug)",
+            "type": "shell",
+            "command": "go",
+            "args": [
+                "build",
+                "-gcflags=all=-N -l",
+                "-o",
+                "${workspaceFolder}/__debug_bin",
+                "github.com/bsquidwrd/TwitchEventSubHandler/cmd/discord_notifier"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
 		}
 	]
 }

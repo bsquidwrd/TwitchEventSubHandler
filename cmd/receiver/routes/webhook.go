@@ -14,7 +14,7 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/receiver_handlers"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/twitch"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/utils"
-	"github.com/bsquidwrd/TwitchEventSubHandler/pkg/models"
+	models "github.com/bsquidwrd/TwitchEventSubHandler/pkg/models/twitch"
 )
 
 func HandleWebhook(dbServices *database.ReceiverService) func(http.ResponseWriter, *http.Request) {

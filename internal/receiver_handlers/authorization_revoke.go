@@ -10,7 +10,7 @@ import (
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/twitch"
-	"github.com/bsquidwrd/TwitchEventSubHandler/pkg/models"
+	models "github.com/bsquidwrd/TwitchEventSubHandler/pkg/models/twitch"
 )
 
 func processAuthorizationRevoke(dbServices *database.ReceiverService, notification *models.AuthorizationRevokeEvent) {
