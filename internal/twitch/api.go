@@ -145,10 +145,10 @@ func getNewAuthKey() (*clientCredentials, error) {
 
 	// Retry the request 3 times
 	for i := 0; i < 3; i++ {
-		err = nil
 		response, err = client.Do(request)
 		if err != nil {
 			time.After(1 * time.Second)
+			err = nil
 			continue
 		} else {
 			break
@@ -209,10 +209,10 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 
 	// Retry the request 3 times
 	for i := 0; i < 3; i++ {
-		err = nil
 		response, err = client.Do(request)
 		if err != nil {
 			time.After(1 * time.Second)
+			err = nil
 			continue
 		} else {
 			break
