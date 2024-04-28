@@ -12,12 +12,12 @@ import (
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/handlers"
-	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/twitch"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/utils"
+	"github.com/bsquidwrd/TwitchEventSubHandler/pkg/models"
 )
 
-func HandleWebhook(dbServices *database.Service) func(http.ResponseWriter, *http.Request) {
+func HandleWebhook(dbServices *database.ReceiverService) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		secret := os.Getenv("EVENTSUBSECRET")
 

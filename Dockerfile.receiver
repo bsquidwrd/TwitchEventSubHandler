@@ -3,8 +3,8 @@ RUN apk update && apk add --no-cache git ca-certificates
 WORKDIR $GOPATH/src/
 COPY . .
 RUN go get -d -v
-RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/runner
-RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/healthcheck "github.com/bsquidwrd/TwitchEventSubHandler/healthcheck"
+RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/runner "github.com/bsquidwrd/TwitchEventSubHandler/cmd/receiver"
+RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/healthcheck "github.com/bsquidwrd/TwitchEventSubHandler/cmd/healthcheck"
 
 
 FROM scratch

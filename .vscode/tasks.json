@@ -9,7 +9,8 @@
                 "build",
                 "-gcflags=all=-N -l",
                 "-o",
-                "${workspaceFolder}/__debug_bin"
+                "${workspaceFolder}/__debug_bin",
+                "github.com/bsquidwrd/TwitchEventSubHandler/cmd/receiver"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

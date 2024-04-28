@@ -5,10 +5,10 @@ import (
 	"log/slog"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
-	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
+	"github.com/bsquidwrd/TwitchEventSubHandler/pkg/models"
 )
 
-func HandleNotification(dbServices *database.Service, notificationType string, rawBody *[]byte) {
+func HandleNotification(dbServices *database.ReceiverService, notificationType string, rawBody *[]byte) {
 
 	switch notificationType {
 	case "stream.online":

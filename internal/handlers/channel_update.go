@@ -5,10 +5,10 @@ import (
 	"log/slog"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
-	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
+	"github.com/bsquidwrd/TwitchEventSubHandler/pkg/models"
 )
 
-func processChannelUpdate(dbServices *database.Service, notification *models.ChannelUpdateEventSubEvent) {
+func processChannelUpdate(dbServices *database.ReceiverService, notification *models.ChannelUpdateEventSubEvent) {
 	slog.Info("Channel was updated", "userid", notification.BroadcasterUserID)
 	defer dbServices.Queue.Publish("channel.update", notification)
 

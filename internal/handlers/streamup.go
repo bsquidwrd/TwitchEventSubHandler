@@ -5,10 +5,10 @@ import (
 	"log/slog"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
-	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
+	"github.com/bsquidwrd/TwitchEventSubHandler/pkg/models"
 )
 
-func processStreamUp(dbServices *database.Service, notification *models.StreamUpEventSubEvent) {
+func processStreamUp(dbServices *database.ReceiverService, notification *models.StreamUpEventSubEvent) {
 	slog.Info("Channel went live", "userid", notification.BroadcasterUserID)
 
 	if notification.Type != "live" {

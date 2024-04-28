@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
-	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
+	"github.com/bsquidwrd/TwitchEventSubHandler/pkg/models"
 )
 
-func processStreamDown(dbServices *database.Service, notification *models.StreamDownEventSubEvent) {
+func processStreamDown(dbServices *database.ReceiverService, notification *models.StreamDownEventSubEvent) {
 	slog.Info("Channel went offline", "userid", notification.BroadcasterUserID)
 	defer dbServices.Queue.Publish("stream.offline", notification)
 

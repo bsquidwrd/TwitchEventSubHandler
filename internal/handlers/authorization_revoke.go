@@ -9,11 +9,11 @@ import (
 	"os"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
-	"github.com/bsquidwrd/TwitchEventSubHandler/internal/models"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/twitch"
+	"github.com/bsquidwrd/TwitchEventSubHandler/pkg/models"
 )
 
-func processAuthorizationRevoke(dbServices *database.Service, notification *models.AuthorizationRevokeEvent) {
+func processAuthorizationRevoke(dbServices *database.ReceiverService, notification *models.AuthorizationRevokeEvent) {
 	slog.Info("User revoked authorization", "userid", notification.UserID)
 	defer dbServices.Queue.Publish("user.authorization.revoke", notification)
 

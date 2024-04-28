@@ -7,15 +7,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Service struct {
+type ReceiverService struct {
 	Cache    *cacheService
 	Database *pgxpool.Pool
 	Twitch   *twitchService
 	Queue    *queueService
 }
 
-func New() *Service {
-	return &Service{
+func New() *ReceiverService {
+	return &ReceiverService{
 		Cache:    newCacheService(),
 		Database: newDatabaseService(),
 		Twitch:   newTwitchService(),
@@ -23,13 +23,13 @@ func New() *Service {
 	}
 }
 
-func (s *Service) Cleanup() {
+func (s *ReceiverService) Cleanup() {
 	defer s.Cache.cleanup()
 	defer s.Database.Close()
 	defer s.Queue.cleanup()
 }
 
-func (s *Service) HealthCheck() error {
+func (s *ReceiverService) HealthCheck() error {
 	var err error
 
 	err = s.Cache.Ping()

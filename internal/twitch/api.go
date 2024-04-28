@@ -43,7 +43,7 @@ func checkForLock(mu *sync.Mutex) {
 	}
 }
 
-func getAuthKey(dbServices *database.Service) string {
+func getAuthKey(dbServices *database.ReceiverService) string {
 	if dbServices.Twitch.AccessToken != "" {
 		return dbServices.Twitch.AccessToken
 	}
@@ -83,7 +83,7 @@ func getAuthKey(dbServices *database.Service) string {
 }
 
 // Generates and stores new auth key in all the necessary places
-func generateNewAuthKey(dbServices *database.Service) (*clientCredentials, error) {
+func generateNewAuthKey(dbServices *database.ReceiverService) (*clientCredentials, error) {
 	newAuthKey, err := getNewAuthKey()
 	if err != nil {
 		slog.Error("Error getting new Auth Key", err)
@@ -172,7 +172,7 @@ func getNewAuthKey() (*clientCredentials, error) {
 	return &credentials, nil
 }
 
-func CallApi(dbServices *database.Service, method string, endpoint string, data string, parameters *url.Values) (int, []byte, error) {
+func CallApi(dbServices *database.ReceiverService, method string, endpoint string, data string, parameters *url.Values) (int, []byte, error) {
 	baseUrl := "https://api.twitch.tv/helix/"
 
 	requestUrl, _ := url.ParseRequestURI(baseUrl)
@@ -257,7 +257,7 @@ func CallApi(dbServices *database.Service, method string, endpoint string, data 
 	}
 }
 
-func DeleteSubscription(dbServices *database.Service, id string) (int, []byte, error) {
+func DeleteSubscription(dbServices *database.ReceiverService, id string) (int, []byte, error) {
 	parameters := &url.Values{}
 	parameters.Add("id", id)
 	return CallApi(dbServices, http.MethodDelete, "eventsub/subscriptions", "", parameters)

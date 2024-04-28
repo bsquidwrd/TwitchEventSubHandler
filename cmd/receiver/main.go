@@ -10,8 +10,8 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 
+	"github.com/bsquidwrd/TwitchEventSubHandler/cmd/receiver/routes"
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
-	"github.com/bsquidwrd/TwitchEventSubHandler/routes"
 )
 
 func main() {
