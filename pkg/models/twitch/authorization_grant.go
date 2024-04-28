@@ -1,4 +1,4 @@
-package models
+package twitch
 
 type AuthorizationGrantEvent struct {
 	UserID    string `json:"user_id"`
