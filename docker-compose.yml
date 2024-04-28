@@ -41,7 +41,9 @@ services:
       start_period: 5s
 
   # webhook_handler:
-  #   build: .
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.receiver
   #   restart: always
   #   ports:
   #     - "8080:8080"
