@@ -14,7 +14,6 @@ import (
 
 func processAuthorizationGrant(dbServices *database.ReceiverService, notification *models.AuthorizationGrantEvent) {
 	slog.Info("User granted authorization", "userid", notification.UserID)
-	defer dbServices.Queue.Publish("user.authorization.grant", notification)
 
 	eventsubSecret := os.Getenv("EVENTSUBSECRET")
 	eventsubWebhook := os.Getenv("EVENTSUBWEBHOOK")
@@ -75,20 +74,21 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 		go twitch.CallApi(dbServices, http.MethodPost, "eventsub/subscriptions", body, nil)
 	}
 
-	go func() {
-		_, err := dbServices.Database.Exec(context.Background(), `
+	_, err := dbServices.Database.Exec(context.Background(), `
 		insert into public.twitch_user (id,"name",login)
 		values($1,$2,$3)
 		on conflict (id) do update
 		set "name"=$2,login=$3;
 		`,
-			notification.UserID,
-			notification.UserName,
-			notification.UserLogin,
-		)
+		notification.UserID,
+		notification.UserName,
+		notification.UserLogin,
+	)
 
-		if err != nil {
-			slog.Warn("Error processing user.authorization.grant for DB call", "userid", notification.UserID)
-		}
-	}()
+	if err != nil {
+		slog.Warn("Error processing user.authorization.grant for DB call", "userid", notification.UserID)
+		return
+	}
+
+	dbServices.Queue.Publish("user.authorization.grant", notification)
 }

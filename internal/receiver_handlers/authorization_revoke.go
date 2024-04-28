@@ -15,7 +15,6 @@ import (
 
 func processAuthorizationRevoke(dbServices *database.ReceiverService, notification *models.AuthorizationRevokeEvent) {
 	slog.Info("User revoked authorization", "userid", notification.UserID)
-	defer dbServices.Queue.Publish("user.authorization.revoke", notification)
 
 	parameters := &url.Values{}
 	parameters.Add("user_id", notification.UserID)
@@ -34,15 +33,16 @@ func processAuthorizationRevoke(dbServices *database.ReceiverService, notificati
 		go twitch.DeleteSubscription(dbServices, subscription.ID)
 	}
 
-	go func() {
-		_, err := dbServices.Database.Exec(context.Background(), `
+	_, err = dbServices.Database.Exec(context.Background(), `
 		delete from public.twitch_user where id=$1;
 		`,
-			notification.UserID,
-		)
+		notification.UserID,
+	)
 
-		if err != nil {
-			slog.Warn("Error processing user.authorization.revoke for DB call", "userid", notification.UserID)
-		}
-	}()
+	if err != nil {
+		slog.Warn("Error processing user.authorization.revoke for DB call", "userid", notification.UserID)
+		return
+	}
+
+	dbServices.Queue.Publish("user.authorization.revoke", notification)
 }
