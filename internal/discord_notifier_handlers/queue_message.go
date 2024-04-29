@@ -1,7 +1,6 @@
 package discordnotifierhandlers
 
 import (
-	"context"
 	"encoding/json"
 	"log/slog"
 
@@ -51,22 +50,5 @@ func ProcessMessage(dbServices *database.DiscordNotifierService, msg amqp.Delive
 		return
 	}
 
-	dbUser := dbServices.Database.QueryRow(
-		context.Background(),
-		`
-			select id, "name", login, description, title, language, category_id, category_name, last_online_at, last_offline_at, live
-			from public.twitch_user
-			where id=$1
-		`,
-		userId,
-	)
-
-	var user twitch.DatabaseUser
-	err := dbUser.Scan(&user.Id, &user.Name, &user.Login, &user.Description, &user.Title, &user.Language, &user.CategoryId, &user.CategoryName, &user.LastOnlineAt, &user.LastOfflineAt, &user.Live)
-	if err != nil {
-		slog.Warn("Could not retrieve user from database", err)
-		return
-	}
-
-	slog.Info("Got user info!", "user", user)
+	ProcessWebhook(dbServices, userId)
 }
