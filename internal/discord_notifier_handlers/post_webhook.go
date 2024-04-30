@@ -87,8 +87,6 @@ func ProcessWebhook(dbServices *database.DiscordNotifierService, userId string) 
 		slog.Warn("There was an error reading a row", err)
 	}
 
-	slog.Info("Subscriptions", subscriptions)
-
 	for _, sub := range subscriptions {
 		webhookUrl := sub.GetUrl()
 		profileUrl := fmt.Sprintf("https://twitch.tv/%s", user.Login)
