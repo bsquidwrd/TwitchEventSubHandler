@@ -1,12 +1,19 @@
 package discord
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+	"time"
+)
 
 type Subscription struct {
-	WebhookId     string `json:"webhookid"`
-	Token         string `json:"token"`
-	Message       string `json:"message"`
-	LastMessageId string `json:last_message_id"`
+	GuildId              string              `json:"guild_id"`
+	UserId               string              `json:"user_id"`
+	WebhookId            string              `json:"webhook_id"`
+	Token                string              `json:"token"`
+	Message              string              `json:"message"`
+	LastMessageId        string              `json:"last_message_id"`
+	LastMessageTimestamp sql.Null[time.Time] `json:"last_message_timestamp"`
 }
 
 func (s *Subscription) GetUrl() string {

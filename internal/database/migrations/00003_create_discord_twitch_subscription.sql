@@ -1,17 +1,18 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE discord_twitch_subscription (
-	guildid varchar NOT NULL,
-	userid varchar NOT NULL,
-	webhookid varchar NOT NULL,
+	guild_id varchar NOT NULL,
+	user_id varchar NOT NULL,
+	webhook_id varchar NOT NULL,
 	"token" varchar NOT NULL,
 	message varchar DEFAULT '' NOT NULL,
 	last_message_id varchar DEFAULT '' NOT NULL,
-	CONSTRAINT discord_twitch_subscription_pk PRIMARY KEY (guildid,userid)
+	last_message_timestamp timestamp with time zone NULL,
+	CONSTRAINT discord_twitch_subscription_pk PRIMARY KEY (guild_id,user_id)
 );
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-DROP discord_twitch_subscription twitch_user;
+DROP TABLE discord_twitch_subscription;
 -- +goose StatementEnd

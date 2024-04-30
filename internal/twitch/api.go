@@ -148,7 +148,6 @@ func getNewAuthKey() (*clientCredentials, error) {
 		response, err = client.Do(request)
 		if err != nil {
 			time.After(1 * time.Second)
-			err = nil
 			continue
 		} else {
 			break
@@ -212,7 +211,6 @@ func CallApi(dbServices *database.ReceiverService, method string, endpoint strin
 		response, err = client.Do(request)
 		if err != nil {
 			time.After(1 * time.Second)
-			err = nil
 			continue
 		} else {
 			break

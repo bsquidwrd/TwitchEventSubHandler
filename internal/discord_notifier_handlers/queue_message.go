@@ -50,5 +50,5 @@ func ProcessMessage(dbServices *database.DiscordNotifierService, msg amqp.Delive
 		return
 	}
 
-	ProcessWebhook(dbServices, userId)
+	slog.Info("Got message for user", "user_id", userId)
 }
