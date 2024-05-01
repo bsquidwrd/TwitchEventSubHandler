@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
@@ -15,6 +16,74 @@ import (
 func processAuthorizationGrant(dbServices *database.ReceiverService, notification *models.AuthorizationGrantEvent) {
 	slog.Info("User granted authorization", "userid", notification.UserID)
 
+	// Get User information
+	parameters := &url.Values{}
+	parameters.Add("id", notification.UserID)
+	_, twitchApiUser, err := twitch.CallApi(dbServices, http.MethodGet, "users", "", parameters)
+	if err != nil {
+		slog.Warn("Could not retrieve user from Twitch API", "error", err)
+		return
+	}
+
+	var twitchUsers models.UserData
+	json.Unmarshal(twitchApiUser, &twitchUsers)
+
+	if len(twitchUsers.Data) > 1 {
+		slog.Warn("Multiple users returned when requesting from Twitch API", "user_id", notification.UserID, "body", string(twitchApiUser))
+		return
+	} else if len(twitchUsers.Data) < 1 {
+		slog.Warn("No users returned when requesting from Twitch API", "user_id", notification.UserID, "body", string(twitchApiUser))
+		return
+	}
+
+	twitchUser := twitchUsers.Data[0]
+
+	// Get Channel information
+	parameters = &url.Values{}
+	parameters.Add("broadcaster_id", notification.UserID)
+	_, twitchApiChannel, err := twitch.CallApi(dbServices, http.MethodGet, "channels", "", parameters)
+	if err != nil {
+		slog.Warn("Could not retrieve user from Twitch API", "error", err)
+		return
+	}
+
+	var twitchChannels models.ChannelData
+	json.Unmarshal(twitchApiChannel, &twitchChannels)
+
+	if len(twitchUsers.Data) > 1 {
+		slog.Warn("Multiple channels returned when requesting from Twitch API", "user_id", notification.UserID, "body", string(twitchApiChannel))
+		return
+	} else if len(twitchUsers.Data) < 1 {
+		slog.Warn("No channels returned when requesting from Twitch API", "user_id", notification.UserID, "body", string(twitchApiChannel))
+	}
+
+	twitchChannel := twitchChannels.Data[0]
+
+	// Save info to database
+	_, err = dbServices.Database.Exec(context.Background(), `
+		insert into public.twitch_user (id,"name",login,avatar_url,email,description,title,"language",category_id,category_name)
+		values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+		on conflict (id) do update
+		set "name"=$2,login=$3,avatar_url=$4,email=$5,description=$6,title=$7,"language"=$8,category_id=$9,category_name=$10
+		`,
+		twitchUser.ID,
+		twitchUser.DisplayName,
+		twitchUser.Login,
+		twitchUser.ProfileImageUrl,
+		twitchUser.Email,
+		twitchUser.Description,
+		twitchChannel.Title,
+		twitchChannel.BroadcasterLanguage,
+		twitchChannel.GameID,
+		twitchChannel.GameName,
+	)
+
+	if err != nil {
+		slog.Warn("Error processing user.authorization.grant for DB call", "user_id", notification.UserID)
+		return
+	}
+
+	// Subscribe to other events of interest
 	eventsubSecret := os.Getenv("EVENTSUBSECRET")
 	eventsubWebhook := os.Getenv("EVENTSUBWEBHOOK")
 	subscriptions := []models.EventsubSubscription{
@@ -72,22 +141,6 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 		bodyBytes, _ := json.Marshal(subscription)
 		body := string(bodyBytes)
 		go twitch.CallApi(dbServices, http.MethodPost, "eventsub/subscriptions", body, nil)
-	}
-
-	_, err := dbServices.Database.Exec(context.Background(), `
-		insert into public.twitch_user (id,"name",login)
-		values($1,$2,$3)
-		on conflict (id) do update
-		set "name"=$2,login=$3;
-		`,
-		notification.UserID,
-		notification.UserName,
-		notification.UserLogin,
-	)
-
-	if err != nil {
-		slog.Warn("Error processing user.authorization.grant for DB call", "userid", notification.UserID)
-		return
 	}
 
 	dbServices.Queue.Publish("user.authorization.grant", notification)

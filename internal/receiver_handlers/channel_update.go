@@ -12,14 +12,12 @@ func processChannelUpdate(dbServices *database.ReceiverService, notification *mo
 	slog.Info("Channel was updated", "userid", notification.BroadcasterUserID)
 
 	_, err := dbServices.Database.Exec(context.Background(), `
-		insert into public.twitch_user (id,"name",login,title,"language",category_id,category_name)
-		values($1,$2,$3,$4,$5,$6,$7)
+		insert into public.twitch_user (id,title,"language",category_id,category_name)
+		values($1,$2,$3,$4,$5)
 		on conflict (id) do update
-		set "name"=$2,login=$3,title=$4,"language"=$5,category_id=$6,category_name=$7;
+		set "title=$2,"language"=$3,category_id=$4,category_name=$5;
 		`,
 		notification.BroadcasterUserID,
-		notification.BroadcasterUserName,
-		notification.BroadcasterUserLogin,
 		notification.StreamTitle,
 		notification.StreamLanguage,
 		notification.StreamCategoryID,
@@ -27,7 +25,7 @@ func processChannelUpdate(dbServices *database.ReceiverService, notification *mo
 	)
 
 	if err != nil {
-		slog.Warn("Error processing channel.update for DB call", "userid", notification.BroadcasterUserID)
+		slog.Warn("Error processing channel.update for DB call", "user_id", notification.BroadcasterUserID)
 		return
 	}
 
