@@ -13,7 +13,7 @@ func processStreamUp(dbServices *database.ReceiverService, notification *models.
 
 	_, err := dbServices.Database.Exec(context.Background(), `
 		update public.twitch_user
-		set "last_online_at=$2,live=$3
+		set last_online_at=$2,live=$3
 		where id=$1
 		`,
 		notification.BroadcasterUserID,

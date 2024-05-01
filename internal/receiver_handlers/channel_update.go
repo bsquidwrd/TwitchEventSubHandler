@@ -13,7 +13,7 @@ func processChannelUpdate(dbServices *database.ReceiverService, notification *mo
 
 	_, err := dbServices.Database.Exec(context.Background(), `
 		update public.twitch_user
-		set "title=$2,"language"=$3,category_id=$4,category_name=$5
+		set title=$2,"language"=$3,category_id=$4,category_name=$5
 		where id=$1
 		`,
 		notification.BroadcasterUserID,
