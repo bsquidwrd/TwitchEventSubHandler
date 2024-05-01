@@ -31,7 +31,7 @@ func getRelativeTimestamp(timestamp time.Time) string {
 	return fmt.Sprintf("<t:%d:R>", timestamp.Unix())
 }
 
-func getNotificationPayload(user *twitch.DatabaseUser, subscription *discord.Subscription) discord.WebhookBody {
+func getNotificationPayload(user twitch.DatabaseUser, subscription discord.Subscription) discord.WebhookBody {
 	profileUrl := fmt.Sprintf("https://twitch.tv/%s", user.Login)
 
 	message := subscription.Message

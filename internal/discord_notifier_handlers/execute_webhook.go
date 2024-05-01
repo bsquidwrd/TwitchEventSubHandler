@@ -3,6 +3,7 @@ package discordnotifierhandlers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -12,7 +13,11 @@ import (
 )
 
 // Returned values are Request Status Code, Response Body, Error
-func sendWebhook(url string, method string, body *discord.WebhookBody) (int, discord.WebhookBody, error) {
+func executeWebhook(url string, method string, body discord.WebhookBody) (int, discord.WebhookBody, error) {
+	if method != http.MethodPost && method != http.MethodPatch {
+		return 0, discord.WebhookBody{}, errors.New("only POST or PATCH are valid methods to use")
+	}
+
 	data, err := json.Marshal(body)
 	if err != nil {
 		slog.Warn("Could not marshal body", err)
@@ -43,7 +48,7 @@ func sendWebhook(url string, method string, body *discord.WebhookBody) (int, dis
 	}
 	if err != nil {
 		slog.Error("Error sending webhook", err)
-		return 0, discord.WebhookBody{}, err
+		return response.StatusCode, discord.WebhookBody{}, err
 	}
 	defer response.Body.Close()
 

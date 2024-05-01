@@ -3,6 +3,7 @@ package discordnotifierhandlers
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"time"
 
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
@@ -56,6 +57,31 @@ func handleStreamOnline(dbServices *database.DiscordNotifierService, event twitc
 
 		if !inCooldown {
 			slog.Debug("Not in cooldown for subscription", "guild_id", sub.GuildId, "user_id", sub.UserId)
+			webhookUrl := sub.GetUrl()
+			payload := getNotificationPayload(user, sub)
+
+			statusCode, response, err := executeWebhook(webhookUrl, http.MethodPost, payload)
+			if err != nil {
+				slog.Warn("Error executing webhook for subscription", "guild_id", sub.GuildId, "user_id", sub.UserId, "error", err)
+			}
+
+			if statusCode == http.StatusNotFound {
+				deleteSubscription(dbServices, sub.GuildId, sub.UserId)
+				continue
+			}
+
+			dbServices.Database.Exec(
+				context.Background(),
+				`
+					update public.discord_twitch_subscription
+					set last_message_id=$3,last_message_timestamp=$4
+					where guild_id=$1 and user_id=$2
+				`,
+				sub.GuildId,
+				sub.UserId,
+				response.Id,
+				time.Now(),
+			)
 		}
 
 		streamStartedAt, _ := time.Parse(time.RFC3339, event.StartedAt)
@@ -64,12 +90,11 @@ func handleStreamOnline(dbServices *database.DiscordNotifierService, event twitc
 			context.Background(),
 			`
 				update public.discord_twitch_subscription
-				set last_message_timestamp=$3,last_online_processed=$4
+				set last_online_processed=$3
 				where guild_id=$1 and user_id=$2
 			`,
 			sub.GuildId,
 			sub.UserId,
-			time.Now(),
 			streamStartedAt,
 		)
 	}

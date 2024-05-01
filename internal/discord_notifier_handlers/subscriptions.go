@@ -58,3 +58,15 @@ func getUserSubscriptions(dbServices *database.DiscordNotifierService, userId st
 
 	return subscriptions
 }
+
+func deleteSubscription(dbServices *database.DiscordNotifierService, guildId string, userId string) {
+	_, _ = dbServices.Database.Exec(
+		context.Background(),
+		`
+			delete from public.discord_twitch_subscription
+			where guild_id=$1 and user_id=$1
+		`,
+		guildId,
+		userId,
+	)
+}
