@@ -10,7 +10,6 @@ import (
 )
 
 func ProcessMessage(dbServices *database.DiscordNotifierService, msg amqp.Delivery) {
-	var userId string
 	switch msg.RoutingKey {
 	case "channel.update":
 		var event twitch.ChannelUpdateEventSubEvent
@@ -19,7 +18,7 @@ func ProcessMessage(dbServices *database.DiscordNotifierService, msg amqp.Delive
 			slog.Warn("Could not parse message", "topic", msg.RoutingKey, err)
 			return
 		}
-		userId = event.BroadcasterUserID
+		handleChannelUpdate(event)
 	case "user.update":
 		var event twitch.UserUpdateEventSubEvent
 		err := json.Unmarshal(msg.Body, &event)
@@ -27,7 +26,7 @@ func ProcessMessage(dbServices *database.DiscordNotifierService, msg amqp.Delive
 			slog.Warn("Could not parse message", "topic", msg.RoutingKey, err)
 			return
 		}
-		userId = event.UserID
+		handleUserUpdate(event)
 	case "stream.online":
 		var event twitch.StreamUpEventSubEvent
 		err := json.Unmarshal(msg.Body, &event)
@@ -35,7 +34,7 @@ func ProcessMessage(dbServices *database.DiscordNotifierService, msg amqp.Delive
 			slog.Warn("Could not parse message", "topic", msg.RoutingKey, err)
 			return
 		}
-		userId = event.BroadcasterUserID
+		handleStreamOnline(event)
 	case "stream.offline":
 		var event twitch.StreamDownEventSubEvent
 		err := json.Unmarshal(msg.Body, &event)
@@ -43,12 +42,6 @@ func ProcessMessage(dbServices *database.DiscordNotifierService, msg amqp.Delive
 			slog.Warn("Could not parse message", "topic", msg.RoutingKey, err)
 			return
 		}
-		userId = event.BroadcasterUserID
+		handleStreamOffline(event)
 	}
-
-	if userId == "" {
-		return
-	}
-
-	slog.Info("Got message for user", "user_id", userId)
 }
