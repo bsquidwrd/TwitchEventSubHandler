@@ -7,6 +7,8 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    env_file:
+      - .env
     volumes:
       - valkey-data:/data
 
@@ -15,9 +17,8 @@ services:
     restart: always
     ports:
       - "5432:5432"
-    environment:
-      POSTGRES_USER: test
-      POSTGRES_PASSWORD: password
+    env_file:
+      - .env
     volumes:
       - db-data:/var/lib/postgresql/data
 
@@ -28,9 +29,8 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
+    env_file:
+      - .env
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
