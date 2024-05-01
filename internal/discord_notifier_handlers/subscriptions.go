@@ -31,7 +31,7 @@ func getUserSubscriptions(dbServices *database.DiscordNotifierService, userId st
 	rows, err := dbServices.Database.Query(
 		context.Background(),
 		`
-			select guild_id, user_id, webhook_id, "token", message, last_message_id, last_message_timestamp
+			select guild_id, user_id, webhook_id, "token", message, last_message_id, last_message_timestamp, last_online_processed
 			from public.discord_twitch_subscription
 			where user_id=$1
 		`,
@@ -46,7 +46,7 @@ func getUserSubscriptions(dbServices *database.DiscordNotifierService, userId st
 	var subscriptions []discord.Subscription
 	for rows.Next() {
 		var s discord.Subscription
-		err := rows.Scan(&s.GuildId, &s.UserId, &s.WebhookId, &s.Token, &s.Message, &s.LastMessageId, &s.LastMessageTimestamp)
+		err := rows.Scan(&s.GuildId, &s.UserId, &s.WebhookId, &s.Token, &s.Message, &s.LastMessageId, &s.LastMessageTimestamp, &s.LastOnlineProcessed)
 		if err != nil {
 			log.Fatal(err)
 		}

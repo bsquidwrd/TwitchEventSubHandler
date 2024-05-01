@@ -14,6 +14,7 @@ type Subscription struct {
 	Message              string              `json:"message"`
 	LastMessageId        string              `json:"last_message_id"`
 	LastMessageTimestamp sql.Null[time.Time] `json:"last_message_timestamp"`
+	LastOnlineProcessed  sql.Null[time.Time] `json:"last_online_processed"`
 }
 
 func (s *Subscription) GetUrl() string {

@@ -34,7 +34,7 @@ func ProcessMessage(dbServices *database.DiscordNotifierService, msg amqp.Delive
 			slog.Warn("Could not parse message", "topic", msg.RoutingKey, err)
 			return
 		}
-		handleStreamOnline(event)
+		handleStreamOnline(dbServices, event)
 	case "stream.offline":
 		var event twitch.StreamDownEventSubEvent
 		err := json.Unmarshal(msg.Body, &event)

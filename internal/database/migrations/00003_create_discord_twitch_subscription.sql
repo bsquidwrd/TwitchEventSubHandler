@@ -8,6 +8,7 @@ CREATE TABLE discord_twitch_subscription (
 	message varchar DEFAULT '' NOT NULL,
 	last_message_id varchar DEFAULT '' NOT NULL,
 	last_message_timestamp timestamp with time zone NULL,
+	last_online_processed timestamp with time zone NULL,
 	CONSTRAINT discord_twitch_subscription_pk PRIMARY KEY (guild_id,user_id)
 );
 -- +goose StatementEnd
