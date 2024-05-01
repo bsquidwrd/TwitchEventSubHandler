@@ -13,10 +13,9 @@ func processStreamDown(dbServices *database.ReceiverService, notification *model
 	slog.Info("Channel went offline", "userid", notification.BroadcasterUserID)
 
 	_, err := dbServices.Database.Exec(context.Background(), `
-		insert into public.twitch_user (id,live,last_offline_at)
-		values($1,$2,$3)
-		on conflict (id) do update
-		set live=$2,last_offline_at=$3;
+		update public.twitch_user
+		set live=$2,last_offline_at=$3
+		where id=$1
 		`,
 		notification.BroadcasterUserID,
 		false,

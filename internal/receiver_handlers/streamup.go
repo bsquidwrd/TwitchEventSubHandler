@@ -12,10 +12,9 @@ func processStreamUp(dbServices *database.ReceiverService, notification *models.
 	slog.Info("Channel went live", "userid", notification.BroadcasterUserID)
 
 	_, err := dbServices.Database.Exec(context.Background(), `
-		insert into public.twitch_user (id,last_online_at,live)
-		values($1,$2,$3)
-		on conflict (id) do update
-		set "last_online_at=$2,live=$3;
+		update public.twitch_user
+		set "last_online_at=$2,live=$3
+		where id=$1
 		`,
 		notification.BroadcasterUserID,
 		notification.StartedAt,
