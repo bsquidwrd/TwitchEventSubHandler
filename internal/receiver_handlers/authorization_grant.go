@@ -140,7 +140,13 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	for _, subscription := range subscriptions {
 		bodyBytes, _ := json.Marshal(subscription)
 		body := string(bodyBytes)
-		go twitch.CallApi(dbServices, http.MethodPost, "eventsub/subscriptions", body, nil)
+		subType := subscription.Type
+		go func() {
+			_, response, err := twitch.CallApi(dbServices, http.MethodPost, "eventsub/subscriptions", body, nil)
+			if err != nil {
+				slog.Warn("Could not subscribe to event for user", "subscription_type", subType, "error", err, "response", string(response))
+			}
+		}()
 	}
 
 	dbServices.Queue.Publish("user.authorization.grant", notification)
