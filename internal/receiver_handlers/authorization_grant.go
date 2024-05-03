@@ -77,18 +77,25 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 
 	twitchChannel := twitchChannels.Data[0]
 
+	// Twitch docs says "verified email address" is provided in this field
+	emailVerified := false
+	if twitchUser.Email != "" {
+		emailVerified = true
+	}
+
 	// Save info to database
 	_, err = dbServices.Database.Exec(context.Background(), `
-		insert into public.twitch_user (id,"name",login,avatar_url,email,description,title,"language",category_id,category_name)
-		values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+		insert into public.twitch_user (id,"name",login,avatar_url,email,email_verified,description,title,"language",category_id,category_name)
+		values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
 		on conflict (id) do update
-		set "name"=$2,login=$3,avatar_url=$4,email=$5,description=$6,title=$7,"language"=$8,category_id=$9,category_name=$10
+		set "name"=$2,login=$3,avatar_url=$4,email=$5,email_verified=$6,description=$7,title=$8,"language"=$9,category_id=$10,category_name=$11
 		`,
 		twitchUser.ID,
 		twitchUser.DisplayName,
 		twitchUser.Login,
 		twitchUser.ProfileImageUrl,
 		twitchUser.Email,
+		emailVerified,
 		twitchUser.Description,
 		twitchChannel.Title,
 		twitchChannel.BroadcasterLanguage,
