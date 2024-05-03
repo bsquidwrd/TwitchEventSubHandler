@@ -16,7 +16,7 @@ func ValidateSignature(secret []byte, messageID string, messageTimestamp string,
 
 	signatureBytes, err := hex.DecodeString(messageSignature)
 	if err != nil {
-		slog.Info("Error decoding signature:", "error", err)
+		slog.Error("Error decoding signature:", "error", err)
 		return false
 	}
 
