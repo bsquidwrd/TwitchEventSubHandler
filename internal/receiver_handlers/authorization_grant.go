@@ -179,11 +179,11 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 		slog.Debug("Set subType")
 		go func() {
 			slog.Debug("Inside GO function to create subscription")
-			_, response, err := twitch.CallApi(dbServices, http.MethodPost, "eventsub/subscriptions", body, nil)
+			statusCode, response, err := twitch.CallApi(dbServices, http.MethodPost, "eventsub/subscriptions", body, nil)
 			if err != nil {
 				slog.Warn("Could not subscribe to event for user", "subscription_type", subType, "error", err, "response", string(response))
 			} else {
-				slog.Debug("Successfully requested creation of event")
+				slog.Debug("Successfully requested creation of event", "response", string(response), slog.Int("status_code", statusCode))
 			}
 		}()
 	}
