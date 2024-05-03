@@ -251,7 +251,7 @@ func CallApi(dbServices *database.ReceiverService, method string, endpoint strin
 			return 0, nil, err
 		}
 
-		if response.StatusCode >= 300 || response.StatusCode < 200 {
+		if response.StatusCode != http.StatusConflict && (response.StatusCode >= 300 || response.StatusCode < 200) {
 			slog.Error("API returned non 2xx code", "endpoint", endpoint, "status_code", response.StatusCode, "response", string(rawBody))
 			return response.StatusCode, rawBody, errors.New("status code is not 2xx")
 		}
