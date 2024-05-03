@@ -25,6 +25,7 @@ services:
     restart: unless-stopped
     expose:
       - '5672'
+      - '15672'
     environment:
       - 'RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}'
       - 'RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}'
