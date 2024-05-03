@@ -9,7 +9,7 @@ import (
 )
 
 func processStreamUp(dbServices *database.ReceiverService, notification *models.StreamUpEventSubEvent) {
-	slog.Info("Channel went live", "userid", notification.BroadcasterUserID)
+	slog.Debug("Channel went live", "userid", notification.BroadcasterUserID)
 
 	_, err := dbServices.Database.Exec(context.Background(), `
 		update public.twitch_user

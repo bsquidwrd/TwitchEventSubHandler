@@ -10,7 +10,7 @@ import (
 )
 
 func processStreamDown(dbServices *database.ReceiverService, notification *models.StreamDownEventSubEvent) {
-	slog.Info("Channel went offline", "userid", notification.BroadcasterUserID)
+	slog.Debug("Channel went offline", "userid", notification.BroadcasterUserID)
 
 	_, err := dbServices.Database.Exec(context.Background(), `
 		update public.twitch_user

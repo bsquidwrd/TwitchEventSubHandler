@@ -14,7 +14,7 @@ import (
 )
 
 func processAuthorizationRevoke(dbServices *database.ReceiverService, notification *models.AuthorizationRevokeEvent) {
-	slog.Info("User revoked authorization", "userid", notification.UserID)
+	slog.Debug("User revoked authorization", "userid", notification.UserID)
 
 	parameters := &url.Values{}
 	parameters.Add("user_id", notification.UserID)

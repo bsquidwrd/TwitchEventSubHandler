@@ -38,7 +38,7 @@ func newQueueService() *queueService {
 		}
 	}()
 
-	slog.Info("Queue connected successfully")
+	slog.Debug("Queue connected successfully")
 
 	return service
 }
@@ -155,11 +155,11 @@ func (q *queueService) StartConsuming(queueName string, topics []string, callbac
 					startTime := time.Now().UTC()
 					callback(m)
 					endTime := time.Now().UTC()
-					slog.Info(" [x] Processed message", "topic", m.RoutingKey, "millisecondstoprocess", endTime.Sub(startTime).Milliseconds())
+					slog.Debug(" [x] Processed message", "topic", m.RoutingKey, "millisecondstoprocess", endTime.Sub(startTime).Milliseconds())
 				}()
 			}
 		}()
 	}
 
-	slog.Info("Successfully started consuming from queue", "queuename", queue.Name)
+	slog.Debug("Successfully started consuming from queue", "queuename", queue.Name)
 }

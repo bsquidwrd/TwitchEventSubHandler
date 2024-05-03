@@ -68,7 +68,7 @@ func HandleWebhook(dbServices *database.ReceiverService) func(http.ResponseWrite
 			return
 		}
 
-		slog.Info(
+		slog.Debug(
 			"Successful request received",
 			"endpoint", html.EscapeString(r.URL.Path),
 			"type", messageType,

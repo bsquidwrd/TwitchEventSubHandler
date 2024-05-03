@@ -20,7 +20,7 @@ func newCacheService() *cacheService {
 	if err != nil {
 		panic(err)
 	}
-	slog.Info("Cache connected successfully")
+	slog.Debug("Cache connected successfully")
 
 	client := redis.NewClient(opt)
 	_, err = client.Get(context.Background(), "thiswillmostlikelyneverexistandthatsokay").Result()

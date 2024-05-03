@@ -14,7 +14,7 @@ import (
 )
 
 func processAuthorizationGrant(dbServices *database.ReceiverService, notification *models.AuthorizationGrantEvent) {
-	slog.Info("User granted authorization", "userid", notification.UserID)
+	slog.Debug("User granted authorization", "userid", notification.UserID)
 
 	// Get User information
 	parameters := &url.Values{}
@@ -46,7 +46,6 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	}
 
 	twitchUser := twitchUsers.Data[0]
-	slog.Debug("Set twitchUser variable")
 
 	// Get Channel information
 	parameters = &url.Values{}
@@ -77,7 +76,6 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	}
 
 	twitchChannel := twitchChannels.Data[0]
-	slog.Debug("Successfully set twitchChannel")
 
 	// Save info to database
 	_, err = dbServices.Database.Exec(context.Background(), `
@@ -97,7 +95,6 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 		twitchChannel.GameID,
 		twitchChannel.GameName,
 	)
-	slog.Debug("Finished DB update for user")
 
 	if err != nil {
 		slog.Warn("Error processing user.authorization.grant for DB call", "user_id", notification.UserID)
@@ -108,9 +105,7 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 
 	// Subscribe to other events of interest
 	eventsubSecret := os.Getenv("EVENTSUBSECRET")
-	slog.Debug("Successfully set eventsubSecret")
 	eventsubWebhook := os.Getenv("EVENTSUBWEBHOOK")
-	slog.Debug("Successfully set eventsubWebhook")
 	subscriptions := []models.EventsubSubscription{
 		{
 			Type:    "user.update",
@@ -161,24 +156,19 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 			},
 		},
 	}
-	slog.Debug("Successfully assembled subscription structs")
 
 	for _, subscription := range subscriptions {
-		slog.Debug("Working on creating subscription", "type", subscription.Type)
+		slog.Debug("Working on creating subscription", "user_id", notification.UserID, "type", subscription.Type)
 		bodyBytes, err := json.Marshal(subscription)
 
 		if err != nil {
 			slog.Warn("Could not marshal subscription for user", "error", err)
-		} else {
-			slog.Debug("Successfully marshaled subscription data")
 		}
 
 		body := string(bodyBytes)
-		slog.Debug("Set body")
 		subType := subscription.Type
-		slog.Debug("Set subType")
 		go func() {
-			slog.Debug("Inside GO function to create subscription")
+			slog.Debug("Inside GO function to create subscription", "user_id", notification.UserID, "type", subType)
 			statusCode, response, err := twitch.CallApi(dbServices, http.MethodPost, "eventsub/subscriptions", body, nil)
 			if err != nil {
 				slog.Warn("Could not subscribe to event for user", "subscription_type", subType, "error", err, "response", string(response))

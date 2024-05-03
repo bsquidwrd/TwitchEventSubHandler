@@ -9,7 +9,7 @@ import (
 )
 
 func processChannelUpdate(dbServices *database.ReceiverService, notification *models.ChannelUpdateEventSubEvent) {
-	slog.Info("Channel was updated", "userid", notification.BroadcasterUserID)
+	slog.Debug("Channel was updated", "userid", notification.BroadcasterUserID)
 
 	_, err := dbServices.Database.Exec(context.Background(), `
 		update public.twitch_user
