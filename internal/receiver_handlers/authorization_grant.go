@@ -26,7 +26,10 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	}
 
 	var twitchUsers models.UserData
-	json.Unmarshal(twitchApiUser, &twitchUsers)
+	err = json.Unmarshal(twitchApiUser, &twitchUsers)
+	if err != nil {
+		slog.Warn("Could not unmarshal users response", "error", err)
+	}
 
 	if len(twitchUsers.Data) > 1 {
 		slog.Warn("Multiple users returned when requesting from Twitch API", "user_id", notification.UserID, "body", string(twitchApiUser))
@@ -38,6 +41,8 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 
 	twitchUser := twitchUsers.Data[0]
 
+	slog.Info("Got Twitch User", "data", twitchUser)
+
 	// Get Channel information
 	parameters = &url.Values{}
 	parameters.Add("broadcaster_id", notification.UserID)
@@ -48,7 +53,10 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	}
 
 	var twitchChannels models.ChannelData
-	json.Unmarshal(twitchApiChannel, &twitchChannels)
+	err = json.Unmarshal(twitchApiChannel, &twitchChannels)
+	if err != nil {
+		slog.Warn("Could not unmarshal users response", "error", err)
+	}
 
 	if len(twitchUsers.Data) > 1 {
 		slog.Warn("Multiple channels returned when requesting from Twitch API", "user_id", notification.UserID, "body", string(twitchApiChannel))
@@ -58,6 +66,8 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	}
 
 	twitchChannel := twitchChannels.Data[0]
+
+	slog.Info("Got Twitch Channel", "data", twitchChannel)
 
 	// Save info to database
 	_, err = dbServices.Database.Exec(context.Background(), `
@@ -81,6 +91,8 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	if err != nil {
 		slog.Warn("Error processing user.authorization.grant for DB call", "user_id", notification.UserID)
 		return
+	} else {
+		slog.Info("Successfully saved user to database")
 	}
 
 	// Subscribe to other events of interest
@@ -138,7 +150,12 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	}
 
 	for _, subscription := range subscriptions {
-		bodyBytes, _ := json.Marshal(subscription)
+		bodyBytes, err := json.Marshal(subscription)
+
+		if err != nil {
+			slog.Warn("Could not marshal subscription for user", "error", err)
+		}
+
 		body := string(bodyBytes)
 		subType := subscription.Type
 		go func() {
