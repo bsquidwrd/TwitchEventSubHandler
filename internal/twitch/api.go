@@ -227,7 +227,7 @@ func CallApi(dbServices *database.ReceiverService, method string, endpoint strin
 		if err != nil {
 			return 0, nil, err
 		}
-		slog.Info("Twitch API rate limit hit, waiting it out", "reset", ratelimitResetValue)
+		slog.Warn("Twitch API rate limit hit, waiting it out", slog.Int64("reset", ratelimitResetValue))
 		ratelimitReset := time.Unix(ratelimitResetValue, 0)
 
 		dbServices.Twitch.RatelimitLock.Lock()
