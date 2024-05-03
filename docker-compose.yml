@@ -50,7 +50,7 @@ services:
       - 'CLIENTID=${CLIENTID}'
       - 'CLIENTSECRET=${CLIENTSECRET}'
       - 'CACHE_URL=${CACHE_URL}'
-      - 'DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASS}@postgres:5432/${POSTGRES_USER}'
+      - 'DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_USER}'
       - 'QUEUE_URL=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672/'
     depends_on:
       valkey:
@@ -71,7 +71,7 @@ services:
     environment:
       - 'PORT=${PORT}'
       - 'CACHE_URL=${CACHE_URL}'
-      - 'DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASS}@postgres:5432/${POSTGRES_USER}'
+      - 'DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_USER}'
       - 'QUEUE_URL=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672/'
     depends_on:
       valkey:
