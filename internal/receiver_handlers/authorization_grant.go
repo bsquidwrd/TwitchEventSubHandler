@@ -23,12 +23,16 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	if err != nil {
 		slog.Warn("Could not retrieve user from Twitch API", "error", err)
 		return
+	} else {
+		slog.Debug("Successfully got data from API for users")
 	}
 
 	var twitchUsers models.UserData
 	err = json.Unmarshal(twitchApiUser, &twitchUsers)
 	if err != nil {
 		slog.Warn("Could not unmarshal users response", "error", err)
+	} else {
+		slog.Debug("Successfully unmarshaled API data for users")
 	}
 
 	if len(twitchUsers.Data) > 1 {
@@ -37,9 +41,12 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	} else if len(twitchUsers.Data) < 1 {
 		slog.Warn("No users returned when requesting from Twitch API", "user_id", notification.UserID, "body", string(twitchApiUser))
 		return
+	} else {
+		slog.Debug("Only got 1 user from Twitch API")
 	}
 
 	twitchUser := twitchUsers.Data[0]
+	slog.Debug("Set twitchUser variable")
 
 	// Get Channel information
 	parameters = &url.Values{}
@@ -48,22 +55,29 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	if err != nil {
 		slog.Warn("Could not retrieve user from Twitch API", "error", err)
 		return
+	} else {
+		slog.Debug("Successfully got data from API for channels")
 	}
 
 	var twitchChannels models.ChannelData
 	err = json.Unmarshal(twitchApiChannel, &twitchChannels)
 	if err != nil {
 		slog.Warn("Could not unmarshal users response", "error", err)
+	} else {
+		slog.Debug("Successfully unmarshaled data from API for channels")
 	}
 
-	if len(twitchUsers.Data) > 1 {
+	if len(twitchChannels.Data) > 1 {
 		slog.Warn("Multiple channels returned when requesting from Twitch API", "user_id", notification.UserID, "body", string(twitchApiChannel))
 		return
-	} else if len(twitchUsers.Data) < 1 {
+	} else if len(twitchChannels.Data) < 1 {
 		slog.Warn("No channels returned when requesting from Twitch API", "user_id", notification.UserID, "body", string(twitchApiChannel))
+	} else {
+		slog.Debug("Only got one channel from API response")
 	}
 
 	twitchChannel := twitchChannels.Data[0]
+	slog.Debug("Successfully set twitchChannel")
 
 	// Save info to database
 	_, err = dbServices.Database.Exec(context.Background(), `
@@ -83,15 +97,20 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 		twitchChannel.GameID,
 		twitchChannel.GameName,
 	)
+	slog.Debug("Finished DB update for user")
 
 	if err != nil {
 		slog.Warn("Error processing user.authorization.grant for DB call", "user_id", notification.UserID)
 		return
+	} else {
+		slog.Debug("Successfully saved user info to DB")
 	}
 
 	// Subscribe to other events of interest
 	eventsubSecret := os.Getenv("EVENTSUBSECRET")
+	slog.Debug("Successfully set eventsubSecret")
 	eventsubWebhook := os.Getenv("EVENTSUBWEBHOOK")
+	slog.Debug("Successfully set eventsubWebhook")
 	subscriptions := []models.EventsubSubscription{
 		{
 			Type:    "user.update",
@@ -142,23 +161,33 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 			},
 		},
 	}
+	slog.Debug("Successfully assembled subscription structs")
 
 	for _, subscription := range subscriptions {
+		slog.Debug("Working on creating subscription", "type", subscription.Type)
 		bodyBytes, err := json.Marshal(subscription)
 
 		if err != nil {
 			slog.Warn("Could not marshal subscription for user", "error", err)
+		} else {
+			slog.Debug("Successfully marshaled subscription data")
 		}
 
 		body := string(bodyBytes)
+		slog.Debug("Set body")
 		subType := subscription.Type
+		slog.Debug("Set subType")
 		go func() {
+			slog.Debug("Inside GO function to create subscription")
 			_, response, err := twitch.CallApi(dbServices, http.MethodPost, "eventsub/subscriptions", body, nil)
 			if err != nil {
 				slog.Warn("Could not subscribe to event for user", "subscription_type", subType, "error", err, "response", string(response))
+			} else {
+				slog.Debug("Successfully requested creation of event")
 			}
 		}()
 	}
 
+	slog.Debug("Publishing event to queue")
 	dbServices.Queue.Publish("user.authorization.grant", notification)
 }
