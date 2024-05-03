@@ -48,6 +48,7 @@ services:
     environment:
       - 'PORT=${PORT}'
       - 'EVENTSUBSECRET=${EVENTSUBSECRET}'
+      - 'EVENTSUBWEBHOOK=${EVENTSUBWEBHOOK}'
       - 'CLIENTID=${CLIENTID}'
       - 'CLIENTSECRET=${CLIENTSECRET}'
       - 'CACHE_URL=${CACHE_URL}'
