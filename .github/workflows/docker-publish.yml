@@ -18,8 +18,8 @@ jobs:
       uses: VaultVulp/gp-docker-action@1.6.0
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        image-name: twitcheventsubhandler
-        image-tag: receiver-latest
+        image-name: receiver
+        image-tag: latest
         dockerfile: Dockerfile.receiver
 
   publish-discord-notifier-latest:
@@ -33,6 +33,6 @@ jobs:
       uses: VaultVulp/gp-docker-action@1.6.0
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        image-name: twitcheventsubhandler
-        image-tag: discord-notifier-latest
+        image-name: discordnotifier
+        image-tag: latest
         dockerfile: Dockerfile.discord_notifier
