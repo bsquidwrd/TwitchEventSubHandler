@@ -15,7 +15,10 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	loggerOptions := &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, loggerOptions))
 	slog.SetDefault(logger)
 
 	slog.Info("Receiver Starting Up...")

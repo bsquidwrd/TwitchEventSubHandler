@@ -41,8 +41,6 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 
 	twitchUser := twitchUsers.Data[0]
 
-	slog.Info("Got Twitch User", "data", twitchUser)
-
 	// Get Channel information
 	parameters = &url.Values{}
 	parameters.Add("broadcaster_id", notification.UserID)
@@ -67,8 +65,6 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 
 	twitchChannel := twitchChannels.Data[0]
 
-	slog.Info("Got Twitch Channel", "data", twitchChannel)
-
 	// Save info to database
 	_, err = dbServices.Database.Exec(context.Background(), `
 		insert into public.twitch_user (id,"name",login,avatar_url,email,description,title,"language",category_id,category_name)
@@ -91,8 +87,6 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	if err != nil {
 		slog.Warn("Error processing user.authorization.grant for DB call", "user_id", notification.UserID)
 		return
-	} else {
-		slog.Info("Successfully saved user to database")
 	}
 
 	// Subscribe to other events of interest
