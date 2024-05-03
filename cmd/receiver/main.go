@@ -14,6 +14,11 @@ import (
 	"github.com/bsquidwrd/TwitchEventSubHandler/internal/database"
 )
 
+var (
+	eventsubSecret  = os.Getenv("EVENTSUBSECRET")
+	eventsubWebhook = os.Getenv("EVENTSUBWEBHOOK")
+)
+
 func main() {
 	debugEnabled := os.Getenv("DEBUG")
 	logLevel := slog.LevelInfo
@@ -28,6 +33,10 @@ func main() {
 	slog.SetDefault(logger)
 
 	slog.Info("Receiver Starting Up...", "log_level", logLevel)
+
+	if eventsubSecret == "" || eventsubWebhook == "" {
+		panic("Verify EVENTSUBSECRET and EVENTSUBWEBHOOK are set")
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
