@@ -96,7 +96,7 @@ func processAuthorizationGrant(dbServices *database.ReceiverService, notificatio
 	)
 
 	if err != nil {
-		slog.Warn("Error processing user.authorization.grant for DB call", "user_id", notification.UserID)
+		slog.Warn("Error processing user.authorization.grant for DB call", "user_id", notification.UserID, "error", err)
 		return
 	} else {
 		slog.Debug("Successfully saved user info to DB")
