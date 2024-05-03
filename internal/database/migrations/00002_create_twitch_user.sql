@@ -5,8 +5,6 @@ CREATE TABLE twitch_user (
 	"name" varchar NOT NULL,
 	login varchar NOT NULL,
 	avatar_url varchar DEFAULT '' NOT NULL,
-	email varchar DEFAULT '' NOT NULL,
-	email_verified boolean DEFAULT false NOT NULL,
 	description varchar DEFAULT '' NOT NULL,
 	title varchar DEFAULT '' NOT NULL,
 	"language" varchar DEFAULT '' NOT NULL,

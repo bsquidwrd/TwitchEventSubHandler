@@ -29,7 +29,7 @@ func handleStreamOnline(dbServices *database.DiscordNotifierService, event twitc
 		context.Background(),
 		`
 			select
-				id,"name",login,avatar_url,email,email_verified,description,title,"language"
+				id,"name",login,avatar_url,description,title,"language"
 				,category_id,category_name,last_online_at,last_offline_at,live
 			from public.twitch_user
 			where id=$1
@@ -39,8 +39,8 @@ func handleStreamOnline(dbServices *database.DiscordNotifierService, event twitc
 
 	var user twitch.DatabaseUser
 	dbUser.Scan(
-		&user.Id, &user.Name, &user.Login, &user.AvatarUrl, &user.Email, &user.EmailVerified,
-		&user.Description, &user.Title, &user.Language, &user.CategoryId, &user.CategoryName,
+		&user.Id, &user.Name, &user.Login, &user.AvatarUrl, &user.Description, &user.Title,
+		&user.Language, &user.CategoryId, &user.CategoryName,
 		&user.LastOnlineAt, &user.LastOfflineAt, &user.Live,
 	)
 

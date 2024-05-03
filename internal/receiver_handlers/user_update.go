@@ -13,14 +13,12 @@ func processUserUpdate(dbServices *database.ReceiverService, notification *model
 
 	_, err := dbServices.Database.Exec(context.Background(), `
 		update public.twitch_user
-		set "name"=$2,login=$3,email=$4,email_verified=$5,description=$6
+		set "name"=$2,login=$3,description=$4
 		where id=$1
 		`,
 		notification.UserID,
 		notification.UserName,
 		notification.UserLogin,
-		notification.Email,
-		notification.EmailVerified,
 		notification.Description,
 	)
 

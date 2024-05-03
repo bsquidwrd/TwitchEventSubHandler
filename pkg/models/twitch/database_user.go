@@ -10,8 +10,6 @@ type DatabaseUser struct {
 	Name          string              `json:"name"`
 	Login         string              `json:"login"`
 	AvatarUrl     string              `json:"avatar_url,omitempty"`
-	Email         string              `json:"email,omitempty"`
-	EmailVerified bool                `json:"email_verified,omitempty"`
 	Description   string              `json:"description,omitempty"`
 	Title         string              `json:"title,omitempty"`
 	Language      string              `json:"language,omitempty"`
