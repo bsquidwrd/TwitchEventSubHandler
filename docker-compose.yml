@@ -53,6 +53,7 @@ services:
       - 'CACHE_URL=${CACHE_URL}'
       - 'DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_USER}'
       - 'QUEUE_URL=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672/'
+      - 'DEBUG=${DEBUG}'
     depends_on:
       valkey:
         condition: service_started
@@ -74,6 +75,7 @@ services:
       - 'CACHE_URL=${CACHE_URL}'
       - 'DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_USER}'
       - 'QUEUE_URL=amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672/'
+      - 'DEBUG=${DEBUG}'
     depends_on:
       valkey:
         condition: service_started
