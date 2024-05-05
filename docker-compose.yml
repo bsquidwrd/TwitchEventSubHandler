@@ -41,7 +41,7 @@ services:
       start_period: 5s
 
   twitch_receiver:
-    image: 'ghcr.io/bsquidwrd/twitch-receiver:main'
+    image: 'ghcr.io/bsquidwrd/twitcheventsubhandler-twitch-receiver:main'
     restart: unless-stopped
     expose:
       - '${PORT}'
@@ -67,7 +67,7 @@ services:
         restart: true
 
   twitch_discord_notifier:
-    image: 'ghcr.io/bsquidwrd/twitch-discord-notifier:main'
+    image: 'ghcr.io/bsquidwrd/twitcheventsubhandler-twitch-discord-notifier:main'
     restart: unless-stopped
     expose:
       - '${PORT}'
