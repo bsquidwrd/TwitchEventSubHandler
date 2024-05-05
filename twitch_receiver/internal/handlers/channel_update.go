@@ -4,8 +4,8 @@ import (
 	"context"
 	"log/slog"
 
+	models "github.com/bsquidwrd/TwitchEventSubHandler/shared/models/eventsub"
 	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_receiver/internal/service"
-	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_receiver/pkg/models"
 )
 
 func processChannelUpdate(dbServices *service.ReceiverService, notification *models.ChannelUpdateEventSubEvent) {

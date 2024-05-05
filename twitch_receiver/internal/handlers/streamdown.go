@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"time"
 
+	models "github.com/bsquidwrd/TwitchEventSubHandler/shared/models/eventsub"
 	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_receiver/internal/service"
-	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_receiver/pkg/models"
 )
 
 func processStreamDown(dbServices *service.ReceiverService, notification *models.StreamDownEventSubEvent) {

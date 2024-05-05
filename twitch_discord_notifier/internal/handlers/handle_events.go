@@ -7,8 +7,8 @@ import (
 	"time"
 
 	dbModels "github.com/bsquidwrd/TwitchEventSubHandler/shared/models/database"
+	models "github.com/bsquidwrd/TwitchEventSubHandler/shared/models/eventsub"
 	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_discord_notifier/internal/service"
-	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_receiver/pkg/models"
 )
 
 func handleChannelUpdate(event models.ChannelUpdateEventSubEvent) {

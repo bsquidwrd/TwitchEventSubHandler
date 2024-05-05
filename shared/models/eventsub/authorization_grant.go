@@ -1,4 +1,4 @@
-package models
+package eventsub
 
 type AuthorizationGrantEvent struct {
 	UserID    string `json:"user_id"`

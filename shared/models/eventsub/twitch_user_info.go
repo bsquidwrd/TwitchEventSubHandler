@@ -1,4 +1,4 @@
-package models
+package eventsub
 
 type UserData struct {
 	Data []User `json:"data"`

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log/slog"
 
+	models "github.com/bsquidwrd/TwitchEventSubHandler/shared/models/eventsub"
 	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_discord_notifier/internal/service"
-	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_receiver/pkg/models"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 

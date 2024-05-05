@@ -1,6 +1,6 @@
 // Copied from Twitch CLI
 // https://github.com/twitchdev/twitch-cli/blob/83b47aa44a986d3ff47d3800d3fee7983813a7a4/internal/models/authorization_revoke.go
-package models
+package eventsub
 
 type AuthorizationRevokeEvent struct {
 	UserID    string `json:"user_id"`

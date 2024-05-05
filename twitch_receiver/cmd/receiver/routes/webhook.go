@@ -10,11 +10,11 @@ import (
 	"os"
 	"time"
 
+	models "github.com/bsquidwrd/TwitchEventSubHandler/shared/models/eventsub"
 	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_receiver/internal/api"
 	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_receiver/internal/handlers"
 	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_receiver/internal/service"
 	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_receiver/internal/utils"
-	"github.com/bsquidwrd/TwitchEventSubHandler/twitch_receiver/pkg/models"
 )
 
 func HandleWebhook(dbServices *service.ReceiverService) func(http.ResponseWriter, *http.Request) {
