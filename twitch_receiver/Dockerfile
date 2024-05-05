@@ -9,7 +9,7 @@ COPY . .
 
 RUN go get -d -v ./twitch_receiver/cmd/receiver/
 RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/receiver ./twitch_receiver/cmd/receiver/
-RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/healthcheck ./healthcheck/cmd/healthcheck/
+RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/healthcheck ./healthcheck/
 
 
 FROM scratch

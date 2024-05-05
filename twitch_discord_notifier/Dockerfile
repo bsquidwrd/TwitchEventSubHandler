@@ -9,7 +9,7 @@ COPY . .
 
 RUN go get -d -v ./twitch_discord_notifier/cmd/notifier/
 RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/notifier ./twitch_discord_notifier/cmd/notifier/
-RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/healthcheck ./healthcheck/cmd/healthcheck/
+RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/healthcheck ./healthcheck/
 
 
 FROM scratch
