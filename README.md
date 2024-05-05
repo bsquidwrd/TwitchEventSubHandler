@@ -9,7 +9,7 @@ This repository aims to represent how I will be handling EventSub notifications 
 
 - Rename `sample.env` to `.env` and edit values as needed
 - Run docker containers with `docker compose up`
-- Run the package with `go run cmd/receiver/main.go`
+- Run the package with `go run twitch_receiver/cmd/main.go`
 
 
 ## [Goose Documentation](https://github.com/pressly/goose?tab=readme-ov-file#install)
@@ -17,7 +17,7 @@ This repository aims to represent how I will be handling EventSub notifications 
 ```shell
 EXPORT GOOSE_DRIVER="postgres"
 EXPORT GOOSE_DBSTRING="postgres://test:password@localhost:5432/test"
-EXPORT GOOSE_MIGRATION_DIR="internal/database/migrations/"
+EXPORT GOOSE_MIGRATION_DIR="shared/database/migrations/"
 go install github.com/pressly/goose/v3/cmd/goose@latest
 goose up
 ```
@@ -25,7 +25,7 @@ goose up
 ```powershell
 $env:"GOOSE_DRIVER" = "postgres"
 $env:"GOOSE_DBSTRING" = "postgres://test:password@localhost:5432/test"
-$env:"GOOSE_MIGRATION_DIR" = "internal/database/migrations/"
+$env:"GOOSE_MIGRATION_DIR" = "shared/database/migrations/"
 go install github.com/pressly/goose/v3/cmd/goose@latest
 goose up
 ```
